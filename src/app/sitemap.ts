@@ -1,5 +1,5 @@
 import { MetadataRoute } from "next";
-import { getEvents, getPublications } from "@/actions";
+import { getStaticEvents, getStaticPublications } from "@/actions";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const baseUrl = "https://statecrafthansraj.info";
@@ -8,8 +8,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     let publications: any[] = [];
 
     try {
-        events = await getEvents();
-        publications = await getPublications();
+        events = await getStaticEvents();
+        publications = await getStaticPublications();
     } catch (error) {
         console.error("Failed to fetch data for sitemap:", error);
         // Continue with empty data to prevent build failure

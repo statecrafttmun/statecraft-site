@@ -1,17 +1,59 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { PrismaClient } from "@prisma/client";
+import { createClient, createStaticClient } from "@/utils/supabase/server";
+import { cookies } from "next/headers";
 
-const prisma = new PrismaClient();
+// Helper to get supabase instance
+async function getSupabase() {
+    const cookieStore = await cookies();
+    return createClient(cookieStore);
+}
+
+// --- Static (No Cookies) ---
+export async function getStaticEvents() {
+    try {
+        const supabase = createStaticClient();
+        const { data, error } = await supabase
+            .from('Event')
+            .select('*')
+            .order('date', { ascending: false });
+
+        if (error) throw error;
+        return data || [];
+    } catch (error) {
+        console.error("Error fetching static events:", error);
+        return [];
+    }
+}
+
+export async function getStaticPublications() {
+    try {
+        const supabase = createStaticClient();
+        const { data, error } = await supabase
+            .from('Publication')
+            .select('*')
+            .order('date', { ascending: false });
+
+        if (error) throw error;
+        return data || [];
+    } catch (error) {
+        console.error("Error fetching static publications:", error);
+        return [];
+    }
+}
 
 // --- Events ---
 export async function getEvents() {
     try {
-        const events = await prisma.event.findMany({
-            orderBy: { date: 'desc' }
-        });
-        return events;
+        const supabase = await getSupabase();
+        const { data, error } = await supabase
+            .from('Event')
+            .select('*')
+            .order('date', { ascending: false });
+
+        if (error) throw error;
+        return data || [];
     } catch (error) {
         console.error("Error fetching events:", error);
         return [];
@@ -20,9 +62,15 @@ export async function getEvents() {
 
 export async function getEventById(id: string) {
     try {
-        return await prisma.event.findUnique({
-            where: { id }
-        });
+        const supabase = await getSupabase();
+        const { data, error } = await supabase
+            .from('Event')
+            .select('*')
+            .eq('id', id)
+            .single();
+
+        if (error) throw error;
+        return data;
     } catch (error) {
         console.error("Error fetching event:", error);
         return null;
@@ -31,34 +79,35 @@ export async function getEventById(id: string) {
 
 export async function saveEvent(event: any) {
     try {
+        const supabase = await getSupabase();
+        const eventData = {
+            title: event.title,
+            date: event.date,
+            location: event.location,
+            desc: event.desc,
+            status: event.status,
+            registrationLink: event.registrationLink,
+            fee: event.fee,
+            isFeatured: event.isFeatured,
+            updatedAt: new Date().toISOString(),
+        };
+
+        let result;
         if (event.id) {
-            await prisma.event.update({
-                where: { id: event.id },
-                data: {
-                    title: event.title,
-                    date: event.date,
-                    location: event.location,
-                    desc: event.desc,
-                    status: event.status,
-                    registrationLink: event.registrationLink,
-                    fee: event.fee,
-                    isFeatured: event.isFeatured,
-                }
-            });
+            const { error } = await supabase
+                .from('Event')
+                .update(eventData)
+                .eq('id', event.id);
+            if (error) throw error;
+            result = { success: true };
         } else {
-            await prisma.event.create({
-                data: {
-                    title: event.title,
-                    date: event.date,
-                    location: event.location,
-                    desc: event.desc,
-                    status: event.status,
-                    registrationLink: event.registrationLink,
-                    fee: event.fee,
-                    isFeatured: event.isFeatured,
-                }
-            });
+            const { error } = await supabase
+                .from('Event')
+                .insert({ ...eventData, createdAt: new Date().toISOString() });
+            if (error) throw error;
+            result = { success: true };
         }
+
         revalidatePath("/events");
         revalidatePath("/admin/events");
         return { success: true };
@@ -70,7 +119,14 @@ export async function saveEvent(event: any) {
 
 export async function deleteEvent(id: string) {
     try {
-        await prisma.event.delete({ where: { id } });
+        const supabase = await getSupabase();
+        const { error } = await supabase
+            .from('Event')
+            .delete()
+            .eq('id', id);
+
+        if (error) throw error;
+
         revalidatePath("/events");
         revalidatePath("/admin/events");
         return { success: true };
@@ -83,10 +139,14 @@ export async function deleteEvent(id: string) {
 // --- Publications ---
 export async function getPublications() {
     try {
-        const publications = await prisma.publication.findMany({
-            orderBy: { date: 'desc' }
-        });
-        return publications;
+        const supabase = await getSupabase();
+        const { data, error } = await supabase
+            .from('Publication')
+            .select('*')
+            .order('date', { ascending: false });
+
+        if (error) throw error;
+        return data || [];
     } catch (error) {
         console.error("Error fetching publications:", error);
         return [];
@@ -95,10 +155,15 @@ export async function getPublications() {
 
 export async function getPublicationById(id: string) {
     try {
-        const pub = await prisma.publication.findUnique({
-            where: { id }
-        });
-        return pub;
+        const supabase = await getSupabase();
+        const { data, error } = await supabase
+            .from('Publication')
+            .select('*')
+            .eq('id', id)
+            .single();
+
+        if (error) throw error;
+        return data;
     } catch (error) {
         console.error("Error fetching publication:", error);
         return null;
@@ -107,25 +172,29 @@ export async function getPublicationById(id: string) {
 
 export async function savePublication(pub: any) {
     try {
+        const supabase = await getSupabase();
         const data = {
             title: pub.title,
             excerpt: pub.excerpt,
             author: pub.author,
             date: pub.date,
-            tags: pub.tags, // Array is natively supported by Postgres
+            tags: pub.tags,
             type: pub.type,
             image: pub.image,
+            updatedAt: new Date().toISOString(),
         };
 
         if (pub.id) {
-            await prisma.publication.update({
-                where: { id: String(pub.id) },
-                data
-            });
+            const { error } = await supabase
+                .from('Publication')
+                .update(data)
+                .eq('id', String(pub.id));
+            if (error) throw error;
         } else {
-            await prisma.publication.create({
-                data
-            });
+            const { error } = await supabase
+                .from('Publication')
+                .insert({ ...data, createdAt: new Date().toISOString() });
+            if (error) throw error;
         }
         revalidatePath("/publications");
         revalidatePath("/admin/publications");
@@ -138,7 +207,14 @@ export async function savePublication(pub: any) {
 
 export async function deletePublication(id: string | number) {
     try {
-        await prisma.publication.delete({ where: { id: String(id) } });
+        const supabase = await getSupabase();
+        const { error } = await supabase
+            .from('Publication')
+            .delete()
+            .eq('id', String(id));
+
+        if (error) throw error;
+
         revalidatePath("/publications");
         revalidatePath("/admin/publications");
         return { success: true };
@@ -151,9 +227,15 @@ export async function deletePublication(id: string | number) {
 // --- Gallery ---
 export async function getGallery() {
     try {
-        return await prisma.galleryImage.findMany({
-            orderBy: { createdAt: 'desc' }
-        });
+        const supabase = await getSupabase();
+        // GalleryImage table
+        const { data, error } = await supabase
+            .from('GalleryImage')
+            .select('*')
+            .order('createdAt', { ascending: false });
+
+        if (error) throw error;
+        return data || [];
     } catch (error) {
         console.error("Error fetching gallery:", error);
         return [];
@@ -162,13 +244,18 @@ export async function getGallery() {
 
 export async function saveGalleryImage(img: any) {
     try {
-        await prisma.galleryImage.create({
-            data: {
+        const supabase = await getSupabase();
+        const { error } = await supabase
+            .from('GalleryImage')
+            .insert({
                 src: img.src,
                 category: img.category,
                 size: img.size,
-            }
-        });
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+            });
+
+        if (error) throw error;
         revalidatePath("/gallery");
         revalidatePath("/admin/gallery");
         return { success: true };
@@ -180,7 +267,14 @@ export async function saveGalleryImage(img: any) {
 
 export async function deleteGalleryImage(id: string) {
     try {
-        await prisma.galleryImage.delete({ where: { id } });
+        const supabase = await getSupabase();
+        const { error } = await supabase
+            .from('GalleryImage')
+            .delete()
+            .eq('id', id);
+
+        if (error) throw error;
+
         revalidatePath("/gallery");
         revalidatePath("/admin/gallery");
         return { success: true };
@@ -193,9 +287,14 @@ export async function deleteGalleryImage(id: string) {
 // --- Team ---
 export async function getTeam() {
     try {
-        return await prisma.teamMember.findMany({
-            orderBy: { createdAt: 'asc' } // Or add an 'order' field later
-        });
+        const supabase = await getSupabase();
+        const { data, error } = await supabase
+            .from('TeamMember')
+            .select('*')
+            .order('createdAt', { ascending: true });
+
+        if (error) throw error;
+        return data || [];
     } catch (error) {
         console.error("Error fetching team:", error);
         return [];
@@ -204,14 +303,19 @@ export async function getTeam() {
 
 export async function saveTeamMember(member: any) {
     try {
-        await prisma.teamMember.create({
-            data: {
+        const supabase = await getSupabase();
+        const { error } = await supabase
+            .from('TeamMember')
+            .insert({
                 name: member.name,
                 role: member.role,
                 image: member.image,
-                quote: member.quote, // Handle quote
-            }
-        });
+                quote: member.quote,
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+            });
+
+        if (error) throw error;
         revalidatePath("/about");
         revalidatePath("/admin/team");
         return { success: true };
@@ -223,7 +327,14 @@ export async function saveTeamMember(member: any) {
 
 export async function deleteTeamMember(id: string) {
     try {
-        await prisma.teamMember.delete({ where: { id } });
+        const supabase = await getSupabase();
+        const { error } = await supabase
+            .from('TeamMember')
+            .delete()
+            .eq('id', id);
+
+        if (error) throw error;
+
         revalidatePath("/about");
         revalidatePath("/admin/team");
         return { success: true };
@@ -236,9 +347,15 @@ export async function deleteTeamMember(id: string) {
 // --- Settings ---
 export async function getSettings() {
     try {
-        const settings = await prisma.setting.findMany();
-        // Convert array of {key, value} to object
-        return settings.reduce((acc: any, curr) => {
+        const supabase = await getSupabase();
+        const { data, error } = await supabase
+            .from('Setting')
+            .select('*');
+
+        if (error) throw error;
+
+        const settings = data || [];
+        return settings.reduce((acc: any, curr: any) => {
             acc[curr.key] = curr.value === 'true' ? true : curr.value === 'false' ? false : curr.value;
             return acc;
         }, {});
@@ -250,12 +367,20 @@ export async function getSettings() {
 
 export async function saveSettings(settings: any) {
     try {
+        const supabase = await getSupabase();
         for (const [key, value] of Object.entries(settings)) {
-            await prisma.setting.upsert({
-                where: { key },
-                update: { value: String(value) },
-                create: { key, value: String(value) }
-            });
+            // upsert
+            const { error } = await supabase
+                .from('Setting')
+                .upsert({
+                    key,
+                    value: String(value),
+                    updatedAt: new Date().toISOString(),
+                    // createdAt handled by DB default usually, but upsert might need it on insert?
+                    // Assuming DB defaults or existing row
+                }, { onConflict: 'key' }); // or implicit via PK
+
+            if (error) throw error;
         }
         revalidatePath("/");
         revalidatePath("/admin/settings");
@@ -269,8 +394,13 @@ export async function saveSettings(settings: any) {
 // --- Categories ---
 export async function getCategories() {
     try {
-        const categories = await prisma.category.findMany();
-        return categories.map(c => c.name);
+        const supabase = await getSupabase();
+        const { data, error } = await supabase
+            .from('Category')
+            .select('*');
+
+        if (error) throw error;
+        return (data || []).map((c: any) => c.name);
     } catch (error) {
         console.error("Error fetching categories:", error);
         return [];
@@ -279,11 +409,19 @@ export async function getCategories() {
 
 export async function saveCategory(category: string) {
     try {
-        await prisma.category.upsert({
-            where: { name: category },
-            update: {},
-            create: { name: category }
-        });
+        const supabase = await getSupabase();
+        // Upsert based on name? Schema said name is unique.
+        // Prisma: upsert where name.
+        // Supabase: upsert on UNIQUE constraint 'Category_name_key' or just 'name'
+        const { error } = await supabase
+            .from('Category')
+            .upsert({
+                name: category,
+                updatedAt: new Date().toISOString(),
+            }, { onConflict: 'name' });
+
+        if (error) throw error;
+
         revalidatePath("/admin/gallery");
         return { success: true };
     } catch (error) {
@@ -294,7 +432,14 @@ export async function saveCategory(category: string) {
 
 export async function deleteCategory(category: string) {
     try {
-        await prisma.category.delete({ where: { name: category } });
+        const supabase = await getSupabase();
+        const { error } = await supabase
+            .from('Category')
+            .delete()
+            .eq('name', category);
+
+        if (error) throw error;
+
         revalidatePath("/admin/gallery");
         return { success: true };
     } catch (error) {
