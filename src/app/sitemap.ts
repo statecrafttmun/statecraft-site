@@ -4,8 +4,8 @@ import { getEvents, getPublications } from "@/actions";
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const baseUrl = "https://statecrafthansraj.info";
 
-    let events = [];
-    let publications = [];
+    let events: any[] = [];
+    let publications: any[] = [];
 
     try {
         events = await getEvents();
