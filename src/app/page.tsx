@@ -191,7 +191,7 @@ export default function Home() {
                 href={settings.joinUsLink || "#"}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-block px-12 py-5 bg-[var(--color-gold)] text-black font-bold text-lg tracking-widest uppercase hover:bg-white transition-all duration-300 shadow-[0_0_20px_rgba(212,175,55,0.4)] hover:shadow-[0_0_40px_rgba(212,175,55,0.6)] animate-pulse"
+                className="inline-block px-12 py-5 bg-[var(--color-gold)] text-black font-bold text-lg tracking-widest uppercase hover:bg-white transition-all duration-300 shadow-[0_0_20px_rgba(0,91,187,0.4)] hover:shadow-[0_0_40px_rgba(0,91,187,0.6)] animate-pulse"
               >
                 Apply Now
               </a>

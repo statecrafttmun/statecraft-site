@@ -41,7 +41,7 @@ const TeamCard = ({ member }: { member: any }) => {
                 </div>
 
                 {/* BACK */}
-                <div className="absolute inset-0 backface-hidden rounded-2xl overflow-hidden bg-[var(--color-gold)] text-black p-8 rotate-y-180 flex flex-col justify-center text-center shadow-[0_0_30px_rgba(212,175,55,0.2)]">
+                <div className="absolute inset-0 backface-hidden rounded-2xl overflow-hidden bg-[var(--color-gold)] text-black p-8 rotate-y-180 flex flex-col justify-center text-center shadow-[0_0_30px_rgba(0,91,187,0.2)]">
                     <div className="mb-4 flex justify-center">
                         <div className="w-16 h-16 rounded-full bg-black/10 flex items-center justify-center">
                             <User size={32} className="text-black/60" />

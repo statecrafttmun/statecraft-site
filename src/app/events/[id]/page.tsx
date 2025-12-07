@@ -176,7 +176,7 @@ export default async function EventDetailPage({ params }: { params: Promise<{ id
                 <button className="flex-1 py-3 rounded-lg border border-white/20 text-white font-bold text-sm">
                     Contact
                 </button>
-                <button className="flex-1 py-3 rounded-lg bg-[var(--color-gold)] text-black font-bold text-sm shadow-[0_0_15px_rgba(212,175,55,0.3)]">
+                <button className="flex-1 py-3 rounded-lg bg-[var(--color-gold)] text-black font-bold text-sm shadow-[0_0_15px_rgba(0,91,187,0.3)]">
                     Register
                 </button>
             </div>

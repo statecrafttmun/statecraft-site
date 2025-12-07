@@ -121,7 +121,7 @@ export default function ContactPage() {
                                 />
                             </div>
 
-                            <button className="w-full py-4 rounded-lg bg-[var(--color-gold)] text-black font-bold uppercase tracking-wider hover:bg-white transition-colors flex items-center justify-center gap-2 group shadow-[0_4px_20px_rgba(212,175,55,0.2)]">
+                            <button className="w-full py-4 rounded-lg bg-[var(--color-gold)] text-black font-bold uppercase tracking-wider hover:bg-white transition-colors flex items-center justify-center gap-2 group shadow-[0_4px_20px_rgba(0,91,187,0.2)]">
                                 Send Message
                                 <Send size={16} className="group-hover:translate-x-1 transition-transform" />
                             </button>
