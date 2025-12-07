@@ -5,7 +5,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const events = await getEvents();
     const publications = await getPublications();
 
-    const baseUrl = "https://example.com"; // Replace with actual domain
+    const baseUrl = "https://statecrafthansraj.info";
 
     const eventUrls = events.map((event: any) => ({
         url: `${baseUrl}/events/${event.id}`,

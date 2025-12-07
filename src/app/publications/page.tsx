@@ -2,121 +2,114 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, Filter, ArrowRight, ChevronDown } from "lucide-react";
+import { Search, ArrowRight, BookOpen, FileText } from "lucide-react";
 import { getPublications } from "@/actions";
 import Link from "next/link";
 import clsx from "clsx";
 
-const tags = ["All", "Diplomacy", "Report", "Policy", "International Relations", "Opinion"];
+const categories = ["All", "Background Guide", "Article", "Newsletter", "Research Paper"];
 
 export default function PublicationsPage() {
     const [publications, setPublications] = useState<any[]>([]);
-    const [selectedTag, setSelectedTag] = useState("All");
-    const [sortOrder, setSortOrder] = useState<"newest" | "oldest">("newest");
+    const [filter, setFilter] = useState("All");
 
     useEffect(() => {
-        getPublications().then(setPublications);
+        getPublications().then((data) => {
+            if (data && data.length > 0) {
+                setPublications(data);
+            } else {
+                // Mock
+                setPublications([
+                    { id: 1, title: "The Future of Digital Diplomacy", type: "Article", date: "Dec 10, 2025", author: "Aarav Sharma", excerpt: "Analyzing how digital tools are reshaping international relations." },
+                    { id: 2, title: "UNSC Background Guide 2026", type: "Background Guide", date: "Jan 05, 2026", author: "Secretariat", excerpt: "Comprehensive guide for the Security Council agenda." },
+                    { id: 3, title: "October Newsletter", type: "Newsletter", date: "Oct 30, 2025", author: "Editorial Team", excerpt: "Highlights from our recent training sessions and workshops." }
+                ]);
+            }
+        });
     }, []);
 
-    const filteredPublications = publications
-        .filter(pub => selectedTag === "All" || pub.tags.includes(selectedTag) || pub.type === selectedTag)
-        .sort((a, b) => {
-            const dateA = new Date(a.date).getTime();
-            const dateB = new Date(b.date).getTime();
-            return sortOrder === "newest" ? dateB - dateA : dateA - dateB;
-        });
+    const filteredPubs = publications.filter(p => filter === "All" || p.type === filter);
 
     return (
-        <div className="min-h-screen pb-20 pt-10">
-            <div className="container mx-auto px-6">
-                <div className="mb-12 text-center">
-                    <h1 className="text-4xl font-bold mb-4">Publications</h1>
-                    <p className="text-gray-400 max-w-2xl mx-auto">
-                        Insights, reports, and opinions from our members and guest contributors.
-                    </p>
-                </div>
+        <div className="min-h-screen pt-24 pb-20 px-6 bg-[#020308]">
+            {/* HEADER */}
+            <div className="container mx-auto max-w-6xl mb-16 text-center">
+                <span className="text-[var(--color-gold)] font-bold tracking-[0.3em] text-xs uppercase block mb-4">Research & Insights</span>
+                <h1 className="text-4xl md:text-6xl font-serif font-bold text-white mb-6">Publications</h1>
+                <p className="text-gray-400 max-w-2xl mx-auto text-lg leading-relaxed">
+                    Explore our repository of background guides, research papers, and diplomatic insights curated by the HRCMUN Secretariat.
+                </p>
+            </div>
 
-                {/* Controls */}
-                <div className="flex flex-col md:flex-row justify-between items-center gap-6 mb-12">
-                    {/* Tags */}
-                    <div className="flex flex-wrap gap-2 justify-center">
-                        {tags.map(tag => (
-                            <button
-                                key={tag}
-                                onClick={() => setSelectedTag(tag)}
-                                className={clsx(
-                                    "px-4 py-2 rounded-full text-sm font-medium transition-all border",
-                                    selectedTag === tag
-                                        ? "bg-primary text-white border-primary"
-                                        : "bg-white/5 text-gray-400 border-white/10 hover:border-white/30"
-                                )}
-                            >
-                                {tag}
-                            </button>
-                        ))}
-                    </div>
-
-                    {/* Sort */}
-                    <div className="flex items-center gap-3">
-                        <span className="text-sm text-gray-500">Sort by:</span>
+            {/* FILTERS */}
+            <div className="container mx-auto max-w-6xl mb-12">
+                <div className="flex flex-wrap justify-center gap-4">
+                    {categories.map(c => (
                         <button
-                            onClick={() => setSortOrder(prev => prev === "newest" ? "oldest" : "newest")}
-                            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-sm font-medium hover:bg-white/10 transition-colors"
+                            key={c}
+                            onClick={() => setFilter(c)}
+                            className={clsx(
+                                "px-6 py-2 rounded-full border text-sm font-medium transition-all duration-300",
+                                filter === c
+                                    ? "bg-[var(--color-gold)] text-black border-[var(--color-gold)]"
+                                    : "bg-transparent text-gray-400 border-white/10 hover:border-white/30 hover:text-white"
+                            )}
                         >
-                            {sortOrder === "newest" ? "Newest First" : "Oldest First"}
-                            <ChevronDown size={16} className={clsx("transition-transform", sortOrder === "oldest" && "rotate-180")} />
+                            {c}
                         </button>
-                    </div>
+                    ))}
                 </div>
+            </div>
 
-                {/* Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    <AnimatePresence mode="popLayout">
-                        {filteredPublications.map((pub, index) => (
-                            <motion.div
-                                key={pub.id}
-                                layout
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: index * 0.1 }}
-                                className="group p-6 rounded-2xl bg-white/5 border border-white/10 hover:border-primary/50 transition-all flex flex-col"
-                            >
-                                <div className="flex justify-between items-start mb-4">
-                                    <span className="px-2 py-1 rounded text-xs font-semibold bg-primary/20 text-primary uppercase tracking-wider">
-                                        {pub.type}
-                                    </span>
-                                    <span className="text-xs text-gray-500">{pub.date}</span>
-                                </div>
+            {/* GRID */}
+            <div className="container mx-auto max-w-6xl grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <AnimatePresence mode="popLayout">
+                    {filteredPubs.map((pub, i) => (
+                        <motion.div
+                            key={pub.id}
+                            layout
+                            initial={{ opacity: 0, scale: 0.9, rotateX: 10 }}
+                            animate={{ opacity: 1, scale: 1, rotateX: 0 }}
+                            exit={{ opacity: 0, scale: 0.9 }}
+                            transition={{ delay: i * 0.1 }}
+                            className="group perspective-1000"
+                        >
+                            <div className="relative h-full bg-[#0A0B10] border border-white/5 rounded-xl overflow-hidden hover:shadow-[0_20px_50px_rgba(0,0,0,0.5)] transition-all duration-500 transform hover:-translate-y-2 hover:rotate-x-2 preserve-3d">
+                                {/* Card Accent Top */}
+                                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[var(--color-gold)] to-transparent opacity-50" />
 
-                                {pub.image && (
-                                    <div className="w-full h-48 mb-4 rounded-xl overflow-hidden bg-gray-800">
-                                        <img src={pub.image} alt={pub.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                                <div className="p-8 flex flex-col h-full">
+                                    <div className="flex justify-between items-start mb-6">
+                                        <div className="p-3 rounded-lg bg-white/5 text-[var(--color-gold)]">
+                                            {pub.type === 'Background Guide' ? <BookOpen size={24} /> : <FileText size={24} />}
+                                        </div>
+                                        <span className="text-xs text-gray-500 font-mono">{pub.date}</span>
                                     </div>
-                                )}
 
-                                <h3 className="text-xl font-bold mb-3 group-hover:text-primary transition-colors line-clamp-2">
-                                    <Link href={`/publications/${pub.id}`}>
-                                        {pub.title}
-                                    </Link>
-                                </h3>
+                                    <h3 className="text-xl font-serif font-bold text-white mb-3 group-hover:text-[var(--color-gold)] transition-colors">
+                                        <Link href={`/publications/${pub.id}`} className="hover:underline decoration-[var(--color-gold)]/50 underline-offset-4">
+                                            {pub.title}
+                                        </Link>
+                                    </h3>
 
-                                <p className="text-gray-400 text-sm mb-6 line-clamp-3 flex-grow">
-                                    {pub.excerpt}
-                                </p>
+                                    <p className="text-gray-400 text-sm leading-relaxed mb-6 flex-grow">
+                                        {pub.excerpt}
+                                    </p>
 
-                                <div className="mt-auto pt-4 border-t border-white/10 flex justify-between items-center">
-                                    <span className="text-xs text-gray-500 font-medium">By {pub.author}</span>
-                                    <Link
-                                        href={`/publications/${pub.id}`}
-                                        className="text-primary text-sm font-semibold flex items-center gap-1 hover:gap-2 transition-all"
-                                    >
-                                        Read More <ArrowRight size={14} />
-                                    </Link>
+                                    <div className="pt-6 border-t border-white/5 flex items-center justify-between mt-auto">
+                                        <span className="text-xs text-gray-500 font-bold uppercase tracking-wider">{pub.type}</span>
+                                        <Link
+                                            href={`/publications/${pub.id}`}
+                                            className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center text-gray-400 group-hover:bg-[var(--color-gold)] group-hover:text-black group-hover:border-[var(--color-gold)] transition-all"
+                                        >
+                                            <ArrowRight size={14} />
+                                        </Link>
+                                    </div>
                                 </div>
-                            </motion.div>
-                        ))}
-                    </AnimatePresence>
-                </div>
+                            </div>
+                        </motion.div>
+                    ))}
+                </AnimatePresence>
             </div>
         </div>
     );

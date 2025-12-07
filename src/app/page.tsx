@@ -1,264 +1,373 @@
+
 "use client";
 
-import { motion } from "framer-motion";
+import { getEvents, getGallery, getSettings } from "@/actions";
+import { motion, useScroll, useTransform } from "framer-motion";
 import Link from "next/link";
-import { ArrowRight, Award, Users } from "lucide-react";
-import { ScrollReveal } from "@/components/ScrollReveal";
-import { getPublications } from "@/actions";
-import { useState, useEffect } from "react";
+import { ArrowRight, Globe, Award, Scale, Calendar, Users, ChevronRight } from "lucide-react";
+import { useRef, useState, useEffect } from "react";
+import Image from "next/image";
 
-export default function Home() {
-  const [publications, setPublications] = useState<any[]>([]);
+// Simple Particle Background Component
+const ParticleBackground = () => {
+  const [circles, setCircles] = useState<any[]>([]);
 
   useEffect(() => {
-    getPublications().then((pubs) => setPublications(pubs));
+    setCircles([...Array(20)].map(() => ({
+      width: Math.random() * 3 + 1 + "px",
+      height: Math.random() * 3 + 1 + "px",
+      left: Math.random() * 100 + "%",
+      top: Math.random() * 100 + "%",
+      duration: Math.random() * 5 + 5
+    })));
   }, []);
 
-  const featuredPub = publications[0];
-  const recentPubs = publications.slice(1, 4);
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-[#1a1a1a] via-[#020308] to-[#020308]" />
+      <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'url("/noise.png")' }} />
+      {/* Assuming noise.png exists or falls back to CSS noise if not, using simulated noise via SVG or just dots */}
+      <svg className="absolute inset-0 w-full h-full opacity-30">
+        <filter id="noiseFilter">
+          <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch" />
+        </filter>
+        <rect width="100%" height="100%" filter="url(#noiseFilter)" />
+      </svg>
+      {/* Small floating particles */}
+      {circles.map((c, i) => (
+        <motion.div
+          key={i}
+          className="absolute bg-white rounded-full opacity-10"
+          style={{
+            width: c.width,
+            height: c.height,
+            left: c.left,
+            top: c.top,
+          }}
+          animate={{
+            y: [0, -20, 0],
+            opacity: [0.1, 0.3, 0.1],
+          }}
+          transition={{
+            duration: c.duration,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+        />
+      ))}
+    </div>
+  );
+};
+
+export default function Home() {
+  const scrollRef = useRef(null);
+  const { scrollYProgress } = useScroll({ target: scrollRef });
+  const y = useTransform(scrollYProgress, [0, 1], ["0%", "50%"]);
+
+  const [nextEvent, setNextEvent] = useState<any>(null);
+  const [gallery, setGallery] = useState<any[]>([]);
+  const [settings, setSettings] = useState<any>({});
+
+  useEffect(() => {
+    getEvents().then((events) => {
+      // Find the first upcoming event, or just the first event if none marked upcoming
+      const upcoming = events.find((e: any) => e.status === 'Upcoming' || e.status === 'Open') || events[0];
+      setNextEvent(upcoming);
+    });
+    getGallery().then((imgs) => setGallery(imgs));
+    getSettings().then((s) => setSettings(s));
+  }, []);
 
   return (
-    <div className="flex flex-col min-h-screen">
-      {/* Hero Section */}
-      <section className="relative h-[90vh] flex items-center justify-center overflow-hidden">
-        {/* Dynamic Background */}
-        <div className="absolute inset-0 z-0">
-          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black z-10" />
-          {/* Placeholder for dynamic background media */}
-          <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1575320181282-9afab399332c?q=80&w=2070&auto=format&fit=crop')] bg-cover bg-center opacity-50 grayscale mix-blend-overlay" />
-          <div className="absolute inset-0 bg-primary/10 mix-blend-multiply" />
+    <div ref={scrollRef} className="flex flex-col min-h-screen bg-[#020308] text-white selection:bg-[var(--color-gold)] selection:text-black">
+
+      {/* HERO SECTION */}
+      <section className="relative h-screen flex flex-col items-center justify-center overflow-hidden px-6">
+        <ParticleBackground />
+
+        {/* Animated Wireframe Globe (Simulated with rotating rings) */}
+        <div className="absolute inset-0 flex items-center justify-center opacity-10 pointer-events-none">
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 60, repeat: Infinity, ease: "linear" }}
+            className="w-[800px] h-[800px] border border-white/10 rounded-full absolute"
+          />
+          <motion.div
+            animate={{ rotate: -360 }}
+            transition={{ duration: 40, repeat: Infinity, ease: "linear" }}
+            className="w-[600px] h-[600px] border border-white/10 rounded-full absolute border-dashed"
+          />
+          <motion.div
+            animate={{ rotate: 180 }}
+            transition={{ duration: 50, repeat: Infinity, ease: "linear" }}
+            className="w-[700px] h-[700px] border border-[var(--color-gold)]/20 rounded-full absolute"
+            style={{ transform: "rotateX(60deg)" }}
+          />
         </div>
 
-        <div className="container mx-auto px-6 relative z-20 text-center">
+        <div className="relative z-10 flex flex-col items-center text-center max-w-4xl mx-auto space-y-8">
+          {/* Logo with Glow */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
+            initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.8 }}
-            className="mb-8"
+            transition={{ duration: 1 }}
+            className="relative w-48 h-48 md:w-64 md:h-64 mb-4"
           >
-            <div className="w-24 h-24 mx-auto mb-6 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center border border-white/20">
-              {/* Logo Placeholder */}
-              <span className="text-4xl font-bold text-primary">M</span>
+            <div className="absolute inset-0 bg-[var(--color-gold)] rounded-full blur-[80px] opacity-20 animate-pulse" />
+            <div className="relative w-full h-full rounded-2xl md:rounded-3xl border border-white/5 bg-black/50 backdrop-blur-sm flex items-center justify-center overflow-hidden shadow-2xl">
+              {/* Try to use the uploaded image if copied, else placeholder text */}
+              {/* We copied it to /logo-crest.jpg */}
+              <img src="/logo-crest.jpg" alt="HRCMUN Crest" className="w-full h-full object-contain p-4 opacity-90 drop-shadow-2xl" />
             </div>
           </motion.div>
 
-          <motion.h1
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2, duration: 0.8 }}
-            className="text-5xl md:text-7xl font-bold tracking-tighter mb-6 bg-clip-text text-transparent bg-gradient-to-r from-white via-gray-200 to-gray-400"
-          >
-            Diplomacy. Dialogue. Change.
-          </motion.h1>
-
-          <motion.p
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4, duration: 0.8 }}
-            className="text-xl md:text-2xl text-gray-300 max-w-2xl mx-auto mb-10"
+            transition={{ delay: 0.3, duration: 0.8 }}
+            className="space-y-4"
           >
-            Empowering the next generation of leaders to solve global challenges through negotiation and collaboration.
-          </motion.p>
+            <h2 className="text-[var(--color-gold)] text-sm md:text-base tracking-[0.3em] uppercase font-medium">
+              Diplomacia · Estadista · Honor
+            </h2>
+            <h1 className="text-4xl md:text-6xl lg:text-7xl font-serif font-bold text-white leading-tight">
+              Hansraj College<br />
+              <span className="text-[#A3A3A3]">Model United Nations</span>
+            </h1>
+          </motion.div>
 
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.6, duration: 0.8 }}
-            className="flex flex-col sm:flex-row items-center justify-center gap-4"
+            className="flex flex-col sm:flex-row gap-4 mt-8 w-full sm:w-auto"
           >
             <Link
-              href="/about"
-              className="px-8 py-4 rounded-full bg-primary text-white font-semibold hover:bg-primary-dark transition-all flex items-center gap-2 group"
+              href="/events"
+              className="px-8 py-4 bg-[var(--color-gold)] text-[#020308] font-bold tracking-wide rounded-sm hover:bg-white transition-colors duration-300 flex items-center justify-center gap-2"
             >
-              Learn More
-              <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+              Join Next Conference
+              <ChevronRight size={16} />
             </Link>
             <Link
-              href="/events"
-              className="px-8 py-4 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white font-semibold hover:bg-white/20 transition-all"
+              href="/about"
+              className="px-8 py-4 glass text-white font-medium tracking-wide rounded-sm hover:bg-white/10 transition-colors duration-300 flex items-center justify-center"
             >
-              Upcoming Events
+              Explore Events
             </Link>
           </motion.div>
         </div>
       </section>
 
-      {/* Who We Are */}
-      <section className="py-20 bg-black">
+      {/* JOIN US SECTION - DYNAMIC */}
+      {/* JOIN US SECTION - DYNAMIC */}
+      {settings.showJoinUs && (
+        <section className="py-24 relative overflow-hidden border-y border-[var(--color-gold)]/30">
+          {/* Background with slight gold tint */}
+          <div className="absolute inset-0 bg-gradient-to-r from-[#020308] via-[#0f0e08] to-[#020308]" />
+          <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'url("/noise.png")' }} />
+
+          {/* Glowing Pulse Effect in Background */}
+          <motion.div
+            animate={{ opacity: [0.1, 0.3, 0.1] }}
+            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--color-gold)_0%,_transparent_70%)] opacity-20"
+          />
+
+          <div className="container mx-auto px-6 text-center relative z-10">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
+            >
+              <span className="inline-block px-3 py-1 mb-4 border border-[var(--color-gold)]/50 rounded-full text-[var(--color-gold)] text-xs tracking-[0.2em] uppercase font-bold bg-[var(--color-gold)]/5">
+                Recruitment Open
+              </span>
+              <h2 className="text-4xl md:text-6xl font-serif font-bold mb-6 text-white">Join The Legacy</h2>
+              <p className="text-xl md:text-2xl font-medium mb-10 max-w-2xl mx-auto text-gray-300">
+                The Secretariat awaits. Be part of something greater than yourself.
+              </p>
+              <a
+                href={settings.joinUsLink || "#"}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-block px-12 py-5 bg-[var(--color-gold)] text-black font-bold text-lg tracking-widest uppercase hover:bg-white transition-all duration-300 shadow-[0_0_20px_rgba(212,175,55,0.4)] hover:shadow-[0_0_40px_rgba(212,175,55,0.6)] animate-pulse"
+              >
+                Apply Now
+              </a>
+            </motion.div>
+          </div>
+        </section>
+      )}
+
+      {/* ABOUT TEASER */}
+      <section className="py-20 md:py-32 relative">
         <div className="container mx-auto px-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
-            <ScrollReveal>
-              <h2 className="text-4xl font-bold mb-6 flex items-center gap-3">
-                Who <span className="text-primary">We Are</span>
-              </h2>
-              <p className="text-gray-400 text-lg leading-relaxed mb-6">
-                We are a student-run organization dedicated to simulating the United Nations. Our society fosters public speaking, critical thinking, and diplomatic skills among students.
+            <div className="space-y-8">
+              <h3 className="text-3xl md:text-4xl font-serif font-bold">
+                A Legacy of <span className="text-[var(--color-gold)] italic">Excellence</span>
+              </h3>
+              <p className="text-gray-400 leading-relaxed text-lg">
+                Established to foster the spirit of diplomacy, HRCMUN has been a pioneer in creating platforms for young leaders to debate, dissent, and discuss global issues.
               </p>
-              <p className="text-gray-400 text-lg leading-relaxed mb-8">
-                Through conferences, workshops, and debates, we provide a platform for young minds to engage with international relations and global policy.
-              </p>
-              <Link
-                href="/about"
-                className="text-primary font-semibold hover:text-primary-light transition-colors flex items-center gap-2"
-              >
-                Read our full story <ArrowRight size={18} />
-              </Link>
-            </ScrollReveal>
+              <ul className="space-y-6">
+                {[
+                  { icon: Scale, text: "Upholding the highest standards of diplomacy and debate." },
+                  { icon: Globe, text: "Connecting delegates from prestigious institutions worldwide." },
+                  { icon: Award, text: "Award-winning secretariat committed to academic rigor." }
+                ].map((item, i) => (
+                  <li key={i} className="flex items-start gap-4">
+                    <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center shrink-0 text-[var(--color-gold)]">
+                      <item.icon size={20} />
+                    </div>
+                    <span className="text-gray-300 mt-2">{item.text}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
 
-            <motion.div
-              initial={{ opacity: 0, x: 50 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.8 }}
-              className="relative"
-            >
-              <div className="aspect-video rounded-2xl overflow-hidden border border-white/10 relative group">
-                <div className="absolute inset-0 bg-primary/20 group-hover:bg-transparent transition-colors duration-500 z-10" />
-                {/* Core Team Placeholder */}
-                <div className="w-full h-full bg-gray-800 flex items-center justify-center">
-                  <Users size={64} className="text-gray-600" />
-                </div>
+            {/* Decorative Grid/Image Area */}
+            <div className="relative aspect-square md:aspect-[4/3] rounded-sm overflow-hidden border border-white/10 glass-panel">
+              <div className="absolute inset-0 bg-gradient-to-tr from-[var(--color-gold-light)]/10 to-transparent" />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <img src="/logo-crest.jpg" className="w-[80%] h-[80%] object-contain opacity-20 blur-sm" alt="Background Crest" />
               </div>
-              <div className="absolute -bottom-6 -left-6 w-2/3 h-2/3 bg-primary/10 -z-10 rounded-2xl blur-2xl" />
-            </motion.div>
+              <div className="absolute bottom-6 left-6 right-6 p-6 glass border-l-4 border-[var(--color-gold)]">
+                <p className="font-serif italic text-lg text-white">
+                  "Diplomacy is the art of telling people to go to hell in such a way that they ask for directions."
+                </p>
+                <p className="text-xs text-[var(--color-gold)] mt-2 uppercase tracking-widest">— Winston Churchill</p>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* What We Do */}
-      <section className="py-20 bg-secondary/30 relative overflow-hidden">
-        <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
-
+      {/* NEXT EVENT HIGHLIGHT */}
+      <section className="py-20 bg-gradient-to-b from-[#020308] to-[#0A0B10] border-y border-white/5">
         <div className="container mx-auto px-6">
-          <ScrollReveal width="100%" className="text-center mb-16">
-            <h2 className="text-4xl font-bold mb-4">What <span className="text-primary">We Do</span></h2>
-            <p className="text-gray-400 max-w-2xl mx-auto">
-              From large-scale summits to intimate workshops, we organize diverse events to cultivate leadership.
-            </p>
-          </ScrollReveal>
+          <div className="relative rounded-2xl overflow-hidden border border-white/10 bg-[#050509]">
+            <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?q=80&w=2069&auto=format&fit=crop')] bg-cover bg-center opacity-20 mix-blend-overlay" />
+            <div className="absolute inset-0 bg-gradient-to-r from-black via-black/80 to-transparent" />
+
+            <div className="relative z-10 p-8 md:p-16 flex flex-col md:flex-row justify-between items-start md:items-end gap-10">
+              <div className="max-w-xl space-y-6">
+                <span className="inline-block px-3 py-1 bg-[var(--color-gold)]/10 text-[var(--color-gold)] text-xs font-bold tracking-widest border border-[var(--color-gold)]/20 rounded-full">
+                  UPCOMING CONFERENCE
+                </span>
+                <h2 className="text-4xl md:text-5xl font-serif font-bold text-white leading-none">
+                  {nextEvent ? nextEvent.title : "HRCMUN 2026"}
+                  {!nextEvent && <span className="text-gray-500"> Coming Soon</span>}
+                </h2>
+                <div className="flex flex-col gap-2 text-gray-400">
+                  <div className="flex items-center gap-2">
+                    <Calendar size={18} className="text-[var(--color-gold)]" />
+                    <span>{nextEvent ? nextEvent.date : "Dates to be announced"}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Users size={18} className="text-[var(--color-gold)]" />
+                    <span>{nextEvent ? nextEvent.location : "Hansraj College, Delhi University"}</span>
+                  </div>
+                </div>
+
+                {nextEvent && (
+                  <Link href={`/events/${nextEvent.id}`} className="inline-block mt-4 px-6 py-3 bg-[var(--color-gold)] text-black font-bold rounded hover:bg-white transition-colors">
+                    Register Now
+                  </Link>
+                )}
+              </div>
+
+              {/* Countdown Timer Mockup - Could be made dynamic if we had a precise timestamp */}
+              <div className="flex gap-4 md:gap-8 text-center">
+                {[
+                  { val: "45", label: "Days" },
+                  { val: "12", label: "Hours" },
+                  { val: "30", label: "Mins" }
+                ].map((t, i) => (
+                  <div key={i} className="flex flex-col">
+                    <span className="text-3xl md:text-5xl font-mono font-bold text-white">{t.val}</span>
+                    <span className="text-xs uppercase text-gray-500 tracking-wider mt-1">{t.label}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="absolute top-0 right-0 p-8 opacity-10">
+              <Globe size={200} />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* WHY HRCMUN SECTION */}
+      <section className="py-24">
+        <div className="container mx-auto px-6">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl font-serif font-bold mb-4">Why Choose HRCMUN?</h2>
+            <div className="w-20 h-1 bg-[var(--color-gold)] mx-auto" />
+          </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
-              {
-                title: "Hansraj Virtual Diplomacy Summit",
-                desc: "Our flagship virtual conference connecting delegates from around the globe.",
-                icon: <Users className="w-8 h-8 text-primary" />
-              },
-              {
-                title: "Young Leaders Fellowship",
-                desc: "A rigorous program designed to mentor and train the next generation of diplomats.",
-                icon: <Award className="w-8 h-8 text-primary" />
-              },
-              {
-                title: "Collaborations",
-                desc: "Partnering with other institutions to bring diverse perspectives to the table.",
-                icon: <Users className="w-8 h-8 text-primary" />
-              }
-            ].map((item, index) => (
-              <ScrollReveal key={index} delay={index * 0.1}>
-                <div className="p-8 h-full rounded-2xl bg-white/5 border border-white/10 hover:border-primary/50 transition-all hover:-translate-y-1 group">
-                  <div className="mb-6 p-4 rounded-xl bg-primary/10 w-fit group-hover:bg-primary/20 transition-colors">
-                    {item.icon}
-                  </div>
-                  <h3 className="text-xl font-bold mb-3">{item.title}</h3>
-                  <p className="text-gray-400 mb-6">{item.desc}</p>
-                  <Link href="/events" className="text-sm font-semibold text-primary hover:text-primary-light">
-                    Learn More &rarr;
-                  </Link>
-                </div>
-              </ScrollReveal>
+              { title: "Elite Debate", desc: "Engage in high-level discourse with the best minds in the circuit.", delay: 0 },
+              { title: "Networking", desc: "Build connections with diplomats, policy-makers, and future leaders.", delay: 0.2 },
+              { title: "Legacy", desc: "Be part of a historic institution with years of excellence.", delay: 0.4 }
+            ].map((card, idx) => (
+              <motion.div
+                key={idx}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ delay: card.delay }}
+                viewport={{ once: true }}
+                className="group p-8 glass-panel rounded-xl border border-white/5 hover:border-[var(--color-gold)]/50 transition-all duration-300 hover:-translate-y-2 relative overflow-hidden"
+              >
+                <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-[var(--color-gold)] to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                <h3 className="text-xl font-bold mb-4 group-hover:text-[var(--color-gold)] transition-colors">{card.title}</h3>
+                <p className="text-gray-400">{card.desc}</p>
+              </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Latest Publications */}
-      <section className="py-20 bg-black">
-        <div className="container mx-auto px-6">
-          <div className="flex justify-between items-end mb-12">
-            <ScrollReveal>
-              <h2 className="text-4xl font-bold mb-2">Latest <span className="text-primary">Publications</span></h2>
-              <p className="text-gray-400">Read our latest articles and reports.</p>
-            </ScrollReveal>
-            <Link href="/publications" className="hidden md:flex items-center gap-2 text-primary hover:text-primary-light transition-colors">
-              View All <ArrowRight size={18} />
-            </Link>
+      {/* PAST HIGHLIGHTS CAROUSEL */}
+      <section className="py-24 bg-[#0A0B10] border-t border-white/5 overflow-hidden">
+        <div className="container mx-auto px-6 mb-12 flex justify-between items-end">
+          <div>
+            <h2 className="text-3xl font-serif font-bold mb-2">Past Highlights</h2>
+            <p className="text-gray-500">Moments from our previous conferences.</p>
           </div>
+          <Link href="/gallery" className="text-[var(--color-gold)] text-sm font-bold tracking-wide flex items-center gap-2 hover:underline">
+            View Gallery <ArrowRight size={16} />
+          </Link>
+        </div>
 
-          {!featuredPub && (
-            <div className="text-center text-gray-500 py-12">
-              <p>No publications available yet.</p>
-            </div>
-          )}
-
-          {featuredPub && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <ScrollReveal width="100%">
-                <Link href={`/publications/${featuredPub.id}`} className="block group relative overflow-hidden rounded-2xl border border-white/10 aspect-[16/9]">
-                  {featuredPub.image ? (
-                    <img src={featuredPub.image} alt={featuredPub.title} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                  ) : (
-                    <div className="absolute inset-0 bg-gray-800 group-hover:scale-105 transition-transform duration-500" />
-                  )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
-                  <div className="absolute bottom-0 left-0 p-8">
-                    <span className="px-3 py-1 rounded-full bg-primary/20 text-primary text-xs font-semibold mb-4 inline-block border border-primary/20">
-                      {featuredPub.type}
-                    </span>
-                    <h3 className="text-2xl font-bold mb-2 group-hover:text-primary transition-colors">
-                      {featuredPub.title}
-                    </h3>
-                    <p className="text-gray-300 line-clamp-2 mb-4">
-                      {featuredPub.excerpt}
-                    </p>
-                    <span className="text-sm text-gray-500">{featuredPub.date}</span>
-                  </div>
-                </Link>
-              </ScrollReveal>
-
-              <div className="space-y-6">
-                {recentPubs.map((pub: any, i: number) => (
-                  <ScrollReveal key={pub.id} delay={i * 0.1}>
-                    <Link href={`/publications/${pub.id}`} className="flex gap-6 group cursor-pointer">
-                      <div className="w-32 h-24 rounded-lg bg-gray-800 shrink-0 border border-white/10 group-hover:border-primary/30 transition-colors overflow-hidden relative">
-                        {pub.image ? (
-                          <img src={pub.image} alt={pub.title} className="w-full h-full object-cover" />
-                        ) : (
-                          <div className="w-full h-full bg-gradient-to-br from-gray-700 to-gray-800" />
-                        )}
-                      </div>
-                      <div className="flex-1">
-                        <span className="text-xs text-primary font-medium mb-1 block">{pub.type}</span>
-                        <h4 className="text-lg font-bold mb-2 group-hover:text-primary transition-colors line-clamp-2">
-                          {pub.title}
-                        </h4>
-                        <span className="text-sm text-gray-500">{pub.date}</span>
-                      </div>
-                    </Link>
-                  </ScrollReveal>
-                ))}
+        <div className="flex gap-6 overflow-x-auto pb-12 px-6 snap-x no-scrollbar">
+          {gallery.length > 0 ? gallery.map((item, index) => (
+            <div key={item.id || index} className="snap-center shrink-0 w-[300px] md:w-[400px] aspect-[4/3] rounded-lg overflow-hidden relative group border border-white/10">
+              {item.src ? (
+                <img src={item.src} alt={item.category || "Highlight"} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+              ) : (
+                <div className="w-full h-full bg-gray-800 animate-pulse" />
+              )}
+              <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-80" />
+              <div className="absolute bottom-0 left-0 p-6 translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
+                <span className="text-xs text-[var(--color-gold)] font-bold mb-1 block uppercase">{item.category || "Conference"}</span>
+                <h4 className="text-xl font-bold text-white">HRCMUN Highlights</h4>
               </div>
             </div>
+          )) : (
+            // Fallback if no gallery data
+            [1, 2, 3].map((i) => (
+              <div key={i} className="snap-center shrink-0 w-[300px] md:w-[400px] aspect-[4/3] rounded-lg overflow-hidden relative group bg-white/5 border border-white/10 flex items-center justify-center">
+                <span className="text-gray-600">No images available</span>
+              </div>
+            ))
           )}
         </div>
       </section>
 
-      {/* Awards & Recognitions */}
-      <section className="py-20 bg-secondary/20 border-y border-white/5">
-        <ScrollReveal width="100%">
-          <div className="container mx-auto px-6 text-center">
-            <h2 className="text-3xl font-bold mb-12">Awards & <span className="text-primary">Recognitions</span></h2>
-            <div className="flex flex-wrap justify-center gap-12 md:gap-24 opacity-70">
-              {[1, 2, 3, 4].map((_, i) => (
-                <div key={i} className="flex flex-col items-center gap-4">
-                  <Award size={48} className="text-gray-400" />
-                  <span className="text-sm font-semibold text-gray-500">Best Delegation 2023</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </ScrollReveal>
-      </section>
     </div>
   );
 }

@@ -41,6 +41,7 @@ export async function saveEvent(event: any) {
                     desc: event.desc,
                     status: event.status,
                     registrationLink: event.registrationLink,
+                    fee: event.fee,
                     isFeatured: event.isFeatured,
                 }
             });
@@ -53,6 +54,7 @@ export async function saveEvent(event: any) {
                     desc: event.desc,
                     status: event.status,
                     registrationLink: event.registrationLink,
+                    fee: event.fee,
                     isFeatured: event.isFeatured,
                 }
             });
@@ -207,6 +209,7 @@ export async function saveTeamMember(member: any) {
                 name: member.name,
                 role: member.role,
                 image: member.image,
+                quote: member.quote, // Handle quote
             }
         });
         revalidatePath("/about");

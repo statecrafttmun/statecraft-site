@@ -1,144 +1,148 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
-import { Calendar, MapPin, Clock, ArrowRight } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Calendar, MapPin, ArrowUpRight, Filter } from "lucide-react";
 import { getEvents } from "@/actions";
 import Link from "next/link";
-
-// Countdown Component
-const Countdown = ({ targetDate }: { targetDate: string }) => {
-    const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
-
-    useEffect(() => {
-        const interval = setInterval(() => {
-            const now = new Date().getTime();
-            const distance = new Date(targetDate).getTime() - now;
-
-            if (distance < 0) {
-                clearInterval(interval);
-                return;
-            }
-
-            setTimeLeft({
-                days: Math.floor(distance / (1000 * 60 * 60 * 24)),
-                hours: Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
-                minutes: Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)),
-                seconds: Math.floor((distance % (1000 * 60)) / 1000),
-            });
-        }, 1000);
-
-        return () => clearInterval(interval);
-    }, [targetDate]);
-
-    return (
-        <div className="flex gap-4 md:gap-8 justify-center mt-8">
-            {Object.entries(timeLeft).map(([unit, value]) => (
-                <div key={unit} className="flex flex-col items-center">
-                    <div className="w-16 h-16 md:w-24 md:h-24 rounded-xl bg-white/5 backdrop-blur-md border border-white/10 flex items-center justify-center mb-2">
-                        <span className="text-2xl md:text-4xl font-bold text-primary font-mono">
-                            {value.toString().padStart(2, '0')}
-                        </span>
-                    </div>
-                    <span className="text-xs md:text-sm text-gray-400 uppercase tracking-wider">{unit}</span>
-                </div>
-            ))}
-        </div>
-    );
-};
+import clsx from "clsx";
 
 export default function EventsPage() {
     const [events, setEvents] = useState<any[]>([]);
-    const [featuredEvent, setFeaturedEvent] = useState<any>(null);
+    const [filter, setFilter] = useState("All");
 
     useEffect(() => {
         getEvents().then((data) => {
-            setEvents(data);
-            // Find featured event or default to first open event or just first event
-            const featured = data.find((e: any) => e.isFeatured) || data.find((e: any) => e.status === 'Open') || data[0];
-            setFeaturedEvent(featured);
+            // Mock data enrichment if needed for testing visuals
+            if (data && data.length > 0) {
+                setEvents(data);
+            } else {
+                // Fallback mock
+                setEvents([
+                    { id: "1", title: "HRCMUN 2026", date: "Feb 12-14, 2026", location: "Hansraj College", status: "Upcoming", type: "Flagship", desc: "The biggest conference of the year." },
+                    { id: "2", title: "Diplomacy Summit", date: "Oct 5, 2025", location: "Virtual", status: "Past", type: "Summit", desc: "Understanding the art of negotiation." },
+                    { id: "3", title: "Training Session 1", date: "Aug 20, 2025", location: "Seminar Room", status: "Past", type: "Training", desc: "Beginner's guide to ROPs." }
+                ]);
+            }
         });
     }, []);
 
+    const filteredEvents = events.filter(e => {
+        if (filter === "All") return true;
+        return e.status === filter;
+    });
+
     return (
-        <div className="min-h-screen pb-20">
-            {/* Hero / Upcoming Event */}
-            <section className="relative py-24 bg-black overflow-hidden">
-                <div className="absolute inset-0 bg-primary/5" />
-                <div className="container mx-auto px-6 relative z-10 text-center">
-                    {featuredEvent && (
-                        <>
-                            <span className="inline-block px-4 py-1 rounded-full bg-primary/20 text-primary text-sm font-semibold mb-6 border border-primary/20">
-                                Featured Event
-                            </span>
-                            <h1 className="text-4xl md:text-6xl font-bold mb-6">{featuredEvent.title}</h1>
-                            <p className="text-xl text-gray-400 mb-8">{featuredEvent.desc}</p>
+        <div className="min-h-screen pt-24 pb-20 px-6">
+            {/* Header */}
+            <div className="container mx-auto max-w-5xl mb-12">
+                <motion.div
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="flex flex-col md:flex-row justify-between items-end gap-6"
+                >
+                    <div>
+                        <span className="text-[var(--color-gold)] font-bold tracking-widest text-xs uppercase block mb-2">Agenda</span>
+                        <h1 className="text-4xl md:text-5xl font-serif font-bold text-white relative inline-block">
+                            Conferences & Events
+                            <span className="block h-1 w-full bg-[var(--color-gold)] mt-1 rounded-full" />
+                        </h1>
+                    </div>
 
-                            <Countdown targetDate={`${featuredEvent.date}T00:00:00`} />
-
-                            <div className="mt-12">
-                                <Link
-                                    href={`/events/${featuredEvent.id}`}
-                                    className="px-8 py-4 rounded-full bg-primary text-white font-semibold hover:bg-primary-dark transition-all shadow-lg shadow-primary/25 inline-block"
-                                >
-                                    View Details
-                                </Link>
-                            </div>
-                        </>
-                    )}
-                </div>
-            </section>
-
-            {/* Events List */}
-            <section className="py-20">
-                <div className="container mx-auto px-6">
-                    <h2 className="text-3xl font-bold mb-12">All <span className="text-primary">Events</span></h2>
-
-                    <div className="space-y-6">
-                        {events.map((event, index) => (
-                            <Link
-                                href={`/events/${event.id}`}
-                                key={event.id}
-                                className="block group"
+                    {/* Filters */}
+                    <div className="flex gap-2 p-1 bg-white/5 rounded-full backdrop-blur-sm border border-white/10">
+                        {["All", "Upcoming", "Past"].map((f) => (
+                            <button
+                                key={f}
+                                onClick={() => setFilter(f)}
+                                className={clsx(
+                                    "px-4 py-2 rounded-full text-sm font-medium transition-all",
+                                    filter === f
+                                        ? "bg-[var(--color-gold)] text-[#020308]"
+                                        : "text-gray-400 hover:text-white"
+                                )}
                             >
-                                <motion.div
-                                    initial={{ opacity: 0, y: 20 }}
-                                    whileInView={{ opacity: 1, y: 0 }}
-                                    viewport={{ once: true }}
-                                    className="p-6 rounded-2xl bg-white/5 border border-white/10 group-hover:border-primary/50 transition-all flex flex-col md:flex-row gap-6 md:items-center"
-                                >
-                                    <div className="w-full md:w-48 h-32 rounded-xl bg-gray-800 shrink-0 overflow-hidden">
-                                        {/* Placeholder Image */}
-                                        <div className="w-full h-full bg-gradient-to-br from-gray-700 to-gray-800" />
-                                    </div>
-
-                                    <div className="flex-grow">
-                                        <div className="flex items-center gap-3 mb-2">
-                                            <span className={`px-2 py-0.5 rounded text-xs font-semibold ${event.status === 'Open' ? 'bg-green-500/20 text-green-400' : 'bg-gray-700 text-gray-400'
-                                                }`}>
-                                                {event.status}
-                                            </span>
-                                            <span className="text-gray-500 text-sm flex items-center gap-1">
-                                                <Calendar size={14} /> {event.date}
-                                            </span>
-                                        </div>
-                                        <h3 className="text-xl font-bold mb-2 group-hover:text-primary transition-colors">{event.title}</h3>
-                                        <p className="text-gray-400 text-sm mb-4 md:mb-0 line-clamp-2">{event.desc}</p>
-                                    </div>
-
-                                    <div className="shrink-0">
-                                        <span
-                                            className="w-full md:w-auto px-6 py-3 rounded-xl border border-white/10 group-hover:bg-white/10 transition-colors flex items-center justify-center gap-2 text-sm font-medium"
-                                        >
-                                            Details <ArrowRight size={16} />
-                                        </span>
-                                    </div>
-                                </motion.div>
-                            </Link>
+                                {f}
+                            </button>
                         ))}
                     </div>
-                </div>
-            </section>
+                </motion.div>
+            </div>
+
+            {/* Content */}
+            <div className="container mx-auto max-w-5xl">
+                <AnimatePresence mode="popLayout">
+                    <div className="flex flex-col gap-6">
+                        {filteredEvents.map((event, index) => (
+                            <motion.div
+                                key={event.id}
+                                layout
+                                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                                animate={{ opacity: 1, scale: 1, y: 0 }}
+                                exit={{ opacity: 0, scale: 0.95 }}
+                                transition={{ delay: index * 0.1 }}
+                            >
+                                <Link
+                                    href={`/events/${event.id}`}
+                                    className="block group relative"
+                                >
+                                    <div className="absolute inset-0 bg-[var(--color-gold)] rounded-2xl blur-lg opacity-0 group-hover:opacity-10 transition-opacity duration-500" />
+
+                                    <div className="relative glass-panel p-6 md:p-8 rounded-2xl border border-white/10 group-hover:border-[var(--color-gold)]/50 transition-colors md:flex items-center gap-8 hover:-translate-y-1 duration-300">
+
+                                        {/* Date Box */}
+                                        <div className="hidden md:flex flex-col items-center justify-center w-24 h-24 rounded-xl bg-white/5 border border-white/10 shrink-0 group-hover:bg-[var(--color-gold)] group-hover:text-black transition-colors duration-300">
+                                            <span className="text-xs font-bold uppercase tracking-wider opacity-70 mb-1">
+                                                {event.date.split(' ')[0]}
+                                            </span>
+                                            <span className="text-2xl font-bold font-serif">
+                                                {event.date.split(' ')[1]?.replace(',', '') || 'TBD'}
+                                            </span>
+                                        </div>
+
+                                        {/* Content */}
+                                        <div className="flex-grow space-y-3">
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex items-center gap-3">
+                                                    {event.type === 'Flagship' && (
+                                                        <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-[var(--color-gold)] text-black">Flagship</span>
+                                                    )}
+                                                    <span className={clsx("text-xs font-bold uppercase tracking-wider", event.status === 'Upcoming' ? "text-green-400" : "text-gray-500")}>
+                                                        {event.status}
+                                                    </span>
+                                                </div>
+                                                <ArrowUpRight className="text-gray-500 group-hover:text-[var(--color-gold)] transition-colors" />
+                                            </div>
+
+                                            <h3 className="text-2xl font-serif font-bold text-white group-hover:text-[var(--color-gold)] transition-colors">
+                                                {event.title}
+                                            </h3>
+
+                                            <div className="flex items-center gap-4 text-sm text-gray-400">
+                                                <span className="flex items-center gap-1">
+                                                    <Calendar size={14} className="text-[var(--color-gold)]" />
+                                                    <span className="md:hidden">{event.date}</span>
+                                                    <span className="hidden md:inline">{event.date}</span>
+                                                </span>
+                                                <span className="flex items-center gap-1">
+                                                    <MapPin size={14} className="text-[var(--color-gold)]" />
+                                                    {event.location}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </Link>
+                            </motion.div>
+                        ))}
+                    </div>
+                </AnimatePresence>
+
+                {filteredEvents.length === 0 && (
+                    <div className="py-20 text-center text-gray-500">
+                        No events found for this filter.
+                    </div>
+                )}
+            </div>
         </div>
     );
 }

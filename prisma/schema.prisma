@@ -15,6 +15,7 @@ model Event {
   desc             String
   status           String
   registrationLink String?
+  fee              String?
   isFeatured       Boolean  @default(false)
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
@@ -46,6 +47,7 @@ model TeamMember {
   id        String   @id @default(uuid())
   name      String
   role      String
+  quote     String? // New quote field
   image     String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

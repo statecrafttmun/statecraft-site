@@ -120,6 +120,15 @@ export default function AdminTeamPage() {
                                 />
                             </div>
                             <div>
+                                <label className="block text-sm font-medium text-gray-400 mb-1">Quote</label>
+                                <textarea
+                                    value={currentMember.quote || ""}
+                                    onChange={(e) => setCurrentMember({ ...currentMember, quote: e.target.value })}
+                                    className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 focus:outline-none focus:border-primary h-24 resize-none"
+                                    placeholder="Enter a short quote..."
+                                />
+                            </div>
+                            <div>
                                 <label className="block text-sm font-medium text-gray-400 mb-1">Image URL</label>
                                 <input
                                     type="url"

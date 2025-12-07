@@ -1,16 +1,15 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Playfair_Display, Inter } from "next/font/google";
 import "./globals.css";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
+import ClientLayout from "@/components/ClientLayout";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const playfair = Playfair_Display({
+  variable: "--font-playfair",
   subsets: ["latin"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
 });
 
@@ -24,11 +23,11 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Model United Nations",
     description: "Empowering the next generation of leaders.",
-    url: "https://example.com", // Replace with actual domain
-    siteName: "Model United Nations",
+    url: "https://statecrafthansraj.info",
+    siteName: "HRCMUN Society",
     images: [
       {
-        url: "https://example.com/og-image.jpg", // Replace with actual image
+        url: "https://statecrafthansraj.info/logo-crest.jpg",
         width: 1200,
         height: 630,
       },
@@ -45,12 +44,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="antialiased min-h-screen flex flex-col">
-        <Navbar />
-        <main className="flex-grow pt-20">
+      <body className={`${playfair.variable} ${inter.variable} antialiased min-h-screen bg-[#020308] text-[#E6E6E6]`}>
+        <ClientLayout>
           {children}
-        </main>
-        <Footer />
+        </ClientLayout>
       </body>
     </html>
   );

@@ -158,6 +158,17 @@ export default function AdminEventsPage() {
                                 />
                             </div>
 
+                            <div>
+                                <label className="block text-sm font-medium text-gray-400 mb-1">Delegate / IP Fee</label>
+                                <input
+                                    type="text"
+                                    value={currentEvent.fee || ""}
+                                    onChange={(e) => setCurrentEvent({ ...currentEvent, fee: e.target.value })}
+                                    className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 focus:outline-none focus:border-primary"
+                                    placeholder="e.g. ₹1200 Delegate / ₹1000 IP"
+                                />
+                            </div>
+
                             <div className="flex items-center gap-3">
                                 <input
                                     type="checkbox"
