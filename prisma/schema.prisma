@@ -15,10 +15,10 @@ model Event {
   desc             String
   status           String
   registrationLink String?
-  fee              String?
   isFeatured       Boolean  @default(false)
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
+  fee              String?
 }
 
 model Publication {
@@ -47,10 +47,10 @@ model TeamMember {
   id        String   @id @default(uuid())
   name      String
   role      String
-  quote     String? // New quote field
   image     String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  quote     String?
 }
 
 model Category {
