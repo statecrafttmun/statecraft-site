@@ -119,17 +119,6 @@ export default async function EventDetailPage({
                   {event.fee || "TBA"}
                 </span>
               </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-400">Deadline</span>
-                <span className="text-white font-bold text-red-400">
-                  {event.registrationDeadline
-                    ? new Date(event.registrationDeadline).toLocaleDateString(
-                        "en-US",
-                        { month: "short", day: "numeric", year: "numeric" }
-                      )
-                    : "TBA"}
-                </span>
-              </div>
             </div>
             {event.status === "Open" ? (
               <a

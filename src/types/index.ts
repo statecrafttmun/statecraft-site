@@ -19,6 +19,7 @@ export interface Publication {
   id: string;
   title: string;
   excerpt: string;
+  content?: string | null;
   author: string;
   date: string;
   tags: string[];
@@ -75,6 +76,9 @@ export interface Timeline {
 // Settings object type for the settings page
 export interface SettingsObject {
   showJoinUs?: boolean;
+  showUpcomingConferences?: boolean;
+  joinUsLink?: string;
+  emergencyContact?: string;
   [key: string]: boolean | string | undefined;
 }
 
@@ -96,6 +100,7 @@ export interface PublicationInput {
   id?: string;
   title: string;
   excerpt: string;
+  content?: string | null;
   author: string;
   date: string;
   tags: string[];

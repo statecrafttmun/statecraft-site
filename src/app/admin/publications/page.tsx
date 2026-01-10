@@ -5,9 +5,9 @@ import {
   getPublications,
   savePublication,
   deletePublication,
-  getCategories,
-  saveCategory,
-  deleteCategory,
+  getPublicationCategories,
+  savePublicationCategory,
+  deletePublicationCategory,
 } from "@/actions";
 import { Plus, Edit, Trash2, X, Save, Settings } from "lucide-react";
 import type { Publication, PublicationInput } from "@/types";
@@ -15,6 +15,7 @@ import type { Publication, PublicationInput } from "@/types";
 const emptyPub: PublicationInput = {
   title: "",
   excerpt: "",
+  content: "",
   author: "",
   date: "",
   type: "Article",
@@ -41,8 +42,8 @@ export default function AdminPublicationsPage() {
   }
 
   async function loadCategories() {
-    const data = await getCategories();
-    // getCategories already returns an array of strings (category names)
+    const data = await getPublicationCategories();
+    // getPublicationCategories already returns an array of strings (category names)
     if (data.length === 0) {
       setCategories(["Article", "Report", "Opinion"]);
     } else {
@@ -52,7 +53,7 @@ export default function AdminPublicationsPage() {
 
   async function handleAddCategory() {
     if (newCategory.trim()) {
-      await saveCategory(newCategory.trim());
+      await savePublicationCategory(newCategory.trim());
       await loadCategories();
       setNewCategory("");
     }
@@ -62,7 +63,7 @@ export default function AdminPublicationsPage() {
     if (
       confirm(`Are you sure you want to delete the category "${category}"?`)
     ) {
-      await deleteCategory(category);
+      await deletePublicationCategory(category);
       await loadCategories();
     }
   }
@@ -264,7 +265,27 @@ export default function AdminPublicationsPage() {
                     setCurrentPub({ ...currentPub, excerpt: e.target.value })
                   }
                   className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 focus:outline-none focus:border-primary resize-none"
+                  placeholder="A brief summary of the article..."
                 />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-400 mb-1">
+                  Content
+                </label>
+                <textarea
+                  rows={10}
+                  value={currentPub.content || ""}
+                  onChange={(e) =>
+                    setCurrentPub({ ...currentPub, content: e.target.value })
+                  }
+                  className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 focus:outline-none focus:border-primary resize-y"
+                  placeholder="Full article content... (supports plain text, paragraphs will be preserved)"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  The full text content of the article or report. Leave empty to
+                  use default placeholder content.
+                </p>
               </div>
 
               <div>

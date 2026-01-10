@@ -11,6 +11,7 @@ interface ArticleData {
   author: string;
   date: string;
   excerpt: string;
+  content?: string | null;
   image?: string | null;
   type?: string;
   id?: string;
@@ -85,36 +86,46 @@ export default function ArticleView({ pub }: { pub: ArticleData }) {
           </blockquote>
 
           <div className="prose prose-invert prose-lg max-w-none text-gray-300">
-            {/* Mock Body Content if not present */}
-            <p>
-              Diplomacy in the modern era is no longer confined to closed-door
-              meetings in Geneva or New York. It has spilled over into the
-              digital realm, where narratives are shaped, alliances are tested,
-              and public opinion is mobilized in real-time.
-            </p>
-            <p>
-              As we look towards the future of international relations, it
-              becomes imperative for young leaders to understand not just the
-              history of statecraft, but its evolving future. The role of
-              non-state actors, the influence of big tech, and the
-              democratization of information are rewriting the rules of
-              engagement.
-            </p>
-            <h3 className="text-[var(--color-gold)] font-serif mt-8 mb-4">
-              The Shift in Power
-            </h3>
-            <p>
-              Traditional power structures are being challenged. The vertical
-              hierarchy of nation-states is intersecting with the horizontal
-              networks of global civil society. This intersection is where the
-              most interesting—and volatile—diplomacy is happening today.
-            </p>
-            <p>
-              At Statecraft MUN Society, we strive to simulate these complex
-              dynamics. Our committees are not just about passing resolutions;
-              they are about understanding the nuance of negotiation in a
-              fractured world.
-            </p>
+            {/* Display actual content if available, otherwise show placeholder */}
+            {pub.content ? (
+              pub.content
+                .split("\n\n")
+                .map((paragraph, index) => <p key={index}>{paragraph}</p>)
+            ) : (
+              <>
+                <p>
+                  Diplomacy in the modern era is no longer confined to
+                  closed-door meetings in Geneva or New York. It has spilled
+                  over into the digital realm, where narratives are shaped,
+                  alliances are tested, and public opinion is mobilized in
+                  real-time.
+                </p>
+                <p>
+                  As we look towards the future of international relations, it
+                  becomes imperative for young leaders to understand not just
+                  the history of statecraft, but its evolving future. The role
+                  of non-state actors, the influence of big tech, and the
+                  democratization of information are rewriting the rules of
+                  engagement.
+                </p>
+                <h3 className="text-[var(--color-gold)] font-serif mt-8 mb-4">
+                  The Shift in Power
+                </h3>
+                <p>
+                  Traditional power structures are being challenged. The
+                  vertical hierarchy of nation-states is intersecting with the
+                  horizontal networks of global civil society. This intersection
+                  is where the most interesting—and volatile—diplomacy is
+                  happening today.
+                </p>
+                <p>
+                  At Statecraft MUN Society, we strive to simulate these complex
+                  dynamics. Our committees are not just about passing
+                  resolutions; they are about understanding the nuance of
+                  negotiation in a fractured world.
+                </p>
+              </>
+            )}
           </div>
 
           {/* Share / Footer */}

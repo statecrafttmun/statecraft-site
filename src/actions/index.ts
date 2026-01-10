@@ -232,6 +232,7 @@ export async function savePublication(pub: PublicationInput) {
     const data = {
       title: pub.title,
       excerpt: pub.excerpt,
+      content: pub.content,
       author: pub.author,
       date: pub.date,
       tags: pub.tags,
@@ -459,7 +460,7 @@ export async function saveSettings(settings: SettingsObject) {
   }
 }
 
-// --- Categories ---
+// --- Categories (Legacy - for backwards compatibility) ---
 export async function getCategories() {
   try {
     const supabase = await getSupabase();
@@ -476,9 +477,6 @@ export async function getCategories() {
 export async function saveCategory(category: string) {
   try {
     const supabase = await getSupabase();
-    // Upsert based on name? Schema said name is unique.
-    // Prisma: upsert where name.
-    // Supabase: upsert on UNIQUE constraint 'Category_name_key' or just 'name'
     const { error } = await supabase.from("Category").upsert(
       {
         id: randomUUID(),
@@ -513,6 +511,118 @@ export async function deleteCategory(category: string) {
     return { success: true };
   } catch (error) {
     console.error("Error deleting category:", error);
+    return { success: false, error };
+  }
+}
+
+// --- Gallery Categories ---
+export async function getGalleryCategories() {
+  try {
+    const supabase = await getSupabase();
+    const { data, error } = await supabase.from("GalleryCategory").select("*");
+
+    if (error) throw error;
+    return (data || []).map((c: Category) => c.name);
+  } catch (error) {
+    console.error("Error fetching gallery categories:", error);
+    return [];
+  }
+}
+
+export async function saveGalleryCategory(category: string) {
+  try {
+    const supabase = await getSupabase();
+    const { error } = await supabase.from("GalleryCategory").upsert(
+      {
+        id: randomUUID(),
+        name: category,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      },
+      { onConflict: "name" }
+    );
+
+    if (error) throw error;
+
+    revalidatePath("/admin/gallery");
+    return { success: true };
+  } catch (error) {
+    console.error("Error saving gallery category:", error);
+    return { success: false, error };
+  }
+}
+
+export async function deleteGalleryCategory(category: string) {
+  try {
+    const supabase = await getSupabase();
+    const { error } = await supabase
+      .from("GalleryCategory")
+      .delete()
+      .eq("name", category);
+
+    if (error) throw error;
+
+    revalidatePath("/admin/gallery");
+    return { success: true };
+  } catch (error) {
+    console.error("Error deleting gallery category:", error);
+    return { success: false, error };
+  }
+}
+
+// --- Publication Categories ---
+export async function getPublicationCategories() {
+  try {
+    const supabase = await getSupabase();
+    const { data, error } = await supabase
+      .from("PublicationCategory")
+      .select("*");
+
+    if (error) throw error;
+    return (data || []).map((c: Category) => c.name);
+  } catch (error) {
+    console.error("Error fetching publication categories:", error);
+    return [];
+  }
+}
+
+export async function savePublicationCategory(category: string) {
+  try {
+    const supabase = await getSupabase();
+    const { error } = await supabase.from("PublicationCategory").upsert(
+      {
+        id: randomUUID(),
+        name: category,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      },
+      { onConflict: "name" }
+    );
+
+    if (error) throw error;
+
+    revalidatePath("/admin/publications");
+    return { success: true };
+  } catch (error) {
+    console.error("Error saving publication category:", error);
+    return { success: false, error };
+  }
+}
+
+export async function deletePublicationCategory(category: string) {
+  try {
+    const supabase = await getSupabase();
+    const { error } = await supabase
+      .from("PublicationCategory")
+      .delete()
+      .eq("name", category);
+
+    if (error) throw error;
+
+    revalidatePath("/admin/publications");
+    return { success: true };
+  } catch (error) {
+    console.error("Error deleting publication category:", error);
     return { success: false, error };
   }
 }

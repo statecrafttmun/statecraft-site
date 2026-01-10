@@ -1,12 +1,22 @@
 "use client";
 
+import { getSettings } from "@/actions";
 import { motion } from "framer-motion";
 import { Mail, MapPin, Phone, Send, ChevronDown } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import clsx from "clsx";
 
 export default function ContactPage() {
   const [focusedField, setFocusedField] = useState<string | null>(null);
+  const [emergencyContact, setEmergencyContact] = useState("+91 98765 43210");
+
+  useEffect(() => {
+    getSettings().then((s) => {
+      if (s.emergencyContact && typeof s.emergencyContact === "string") {
+        setEmergencyContact(s.emergencyContact);
+      }
+    });
+  }, []);
 
   return (
     <div className="min-h-screen pb-20 pt-20 bg-[#020308]">
@@ -43,7 +53,7 @@ export default function ContactPage() {
                 {
                   icon: Phone,
                   title: "Emergency Contact",
-                  val: "+91 98765 43210",
+                  val: emergencyContact,
                 },
                 {
                   icon: MapPin,

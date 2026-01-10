@@ -8,6 +8,7 @@ import type { SettingsObject } from "@/types";
 export default function AdminSettingsPage() {
   const [settings, setSettings] = useState<SettingsObject>({
     showJoinUs: true,
+    showUpcomingConferences: true,
   });
   const [loading, setLoading] = useState(false);
 
@@ -55,7 +56,7 @@ export default function AdminSettingsPage() {
             </label>
           </div>
 
-          <div>
+          <div className="mb-6">
             <label className="block text-sm font-medium text-gray-400 mb-1">
               Join Us Form Link
             </label>
@@ -74,6 +75,56 @@ export default function AdminSettingsPage() {
             />
             <p className="text-xs text-gray-500 mt-1">
               Direct link to the recruitment form.
+            </p>
+          </div>
+
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <p className="font-medium">Show "Upcoming Conferences" Section</p>
+              <p className="text-sm text-gray-400">
+                Toggle visibility of the upcoming conferences block on the home
+                page.
+              </p>
+            </div>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                className="sr-only peer"
+                checked={settings.showUpcomingConferences !== false}
+                onChange={(e) =>
+                  setSettings({
+                    ...settings,
+                    showUpcomingConferences: e.target.checked,
+                  })
+                }
+              />
+              <div className="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+            </label>
+          </div>
+        </div>
+
+        <div className="p-6 rounded-xl bg-white/5 border border-white/10">
+          <h3 className="text-xl font-bold mb-4">Contact Information</h3>
+
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-400 mb-1">
+              Emergency Contact Number
+            </label>
+            <input
+              type="tel"
+              value={
+                typeof settings.emergencyContact === "string"
+                  ? settings.emergencyContact
+                  : ""
+              }
+              onChange={(e) =>
+                setSettings({ ...settings, emergencyContact: e.target.value })
+              }
+              className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 focus:outline-none focus:border-primary"
+              placeholder="+91 98765 43210"
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              Emergency contact number displayed on the Contact page.
             </p>
           </div>
         </div>

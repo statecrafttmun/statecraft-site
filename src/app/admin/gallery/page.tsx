@@ -5,9 +5,9 @@ import {
   getGallery,
   saveGalleryImage,
   deleteGalleryImage,
-  getCategories,
-  saveCategory,
-  deleteCategory,
+  getGalleryCategories,
+  saveGalleryCategory,
+  deleteGalleryCategory,
 } from "@/actions";
 import { Plus, Trash2, X, Save, Settings } from "lucide-react";
 import type { GalleryImage, GalleryImageInput } from "@/types";
@@ -31,7 +31,7 @@ export default function AdminGalleryPage() {
   async function loadData() {
     const [galleryData, catsData] = await Promise.all([
       getGallery(),
-      getCategories(),
+      getGalleryCategories(),
     ]);
     setImages(galleryData);
     setCategories(catsData);
@@ -62,14 +62,14 @@ export default function AdminGalleryPage() {
   async function handleAddCategory(e: React.FormEvent) {
     e.preventDefault();
     if (!newCategory.trim()) return;
-    await saveCategory(newCategory.trim());
+    await saveGalleryCategory(newCategory.trim());
     setNewCategory("");
     loadData();
   }
 
   async function handleDeleteCategory(cat: string) {
     if (confirm(`Delete category "${cat}"?`)) {
-      await deleteCategory(cat);
+      await deleteGalleryCategory(cat);
       loadData();
     }
   }

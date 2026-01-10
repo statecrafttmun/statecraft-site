@@ -46,6 +46,7 @@ interface GalleryImage {
 interface Settings {
   showJoinUs?: boolean;
   joinUsLink?: string;
+  showUpcomingConferences?: boolean;
   [key: string]: string | boolean | undefined;
 }
 
@@ -71,7 +72,15 @@ const ParticleBackground = () => {
 
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-[#1a1a1a] via-[#020308] to-[#020308]" />
+      {/* Background image with overlay */}
+      <div
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style={{
+          backgroundImage:
+            'url("https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072&auto=format&fit=crop")',
+        }}
+      />
+      <div className="absolute inset-0 bg-gradient-to-b from-[#020308]/80 via-[#020308]/90 to-[#020308]" />
       <div
         className="absolute inset-0 opacity-20"
         style={{ backgroundImage: 'url("/noise.png")' }}
@@ -235,7 +244,7 @@ export default function Home() {
             transition={{ delay: 0.3, duration: 0.8 }}
             className="space-y-4"
           >
-            <h2 className="text-[var(--color-gold)] text-sm md:text-base tracking-[0.3em] uppercase font-medium">
+            <h2 className="text-white text-sm md:text-base tracking-[0.3em] uppercase font-medium">
               Diplomacia · Estadista · Honor
             </h2>
             <h1 className="text-4xl md:text-6xl lg:text-7xl font-serif font-bold text-white leading-tight">
@@ -262,7 +271,7 @@ export default function Home() {
               href="/about"
               className="px-8 py-4 glass text-white font-medium tracking-wide rounded-sm hover:bg-white/10 transition-colors duration-300 flex items-center justify-center"
             >
-              Explore Events
+              About
             </Link>
           </motion.div>
         </div>
@@ -384,88 +393,95 @@ export default function Home() {
       </section>
 
       {/* NEXT EVENT HIGHLIGHT */}
-      <section className="py-20 bg-gradient-to-b from-[#020308] to-[#0A0B10] border-y border-white/5">
-        <div className="container mx-auto px-6">
-          <div className="relative rounded-2xl overflow-hidden border border-white/10 bg-[#050509]">
-            <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?q=80&w=2069&auto=format&fit=crop')] bg-cover bg-center opacity-20 mix-blend-overlay" />
-            <div className="absolute inset-0 bg-gradient-to-r from-black via-black/80 to-transparent" />
+      {settings.showUpcomingConferences !== false && (
+        <section className="py-20 bg-gradient-to-b from-[#020308] to-[#0A0B10] border-y border-white/5">
+          <div className="container mx-auto px-6">
+            <div className="relative rounded-2xl overflow-hidden border border-white/10 bg-[#050509]">
+              <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?q=80&w=2069&auto=format&fit=crop')] bg-cover bg-center opacity-20 mix-blend-overlay" />
+              <div className="absolute inset-0 bg-gradient-to-r from-black via-black/80 to-transparent" />
 
-            <div className="relative z-10 p-8 md:p-16 flex flex-col md:flex-row justify-between items-start md:items-end gap-10">
-              <div className="max-w-xl space-y-6">
-                <span className="inline-block px-3 py-1 bg-[var(--color-gold)]/10 text-[var(--color-gold)] text-xs font-bold tracking-widest border border-[var(--color-gold)]/20 rounded-full">
-                  UPCOMING CONFERENCE
-                </span>
-                <h2 className="text-4xl md:text-5xl font-serif font-bold text-white leading-none">
-                  {nextEvent ? nextEvent.title : "Statecraft MUN Society 2026"}
-                  {!nextEvent && (
-                    <span className="text-gray-500"> Coming Soon</span>
+              <div className="relative z-10 p-8 md:p-16 flex flex-col md:flex-row justify-between items-start md:items-end gap-10">
+                <div className="max-w-xl space-y-6">
+                  <span className="inline-block px-3 py-1 bg-[var(--color-gold)]/10 text-[var(--color-gold)] text-xs font-bold tracking-widest border border-[var(--color-gold)]/20 rounded-full">
+                    UPCOMING CONFERENCE
+                  </span>
+                  <h2 className="text-4xl md:text-5xl font-serif font-bold text-white leading-none">
+                    {nextEvent
+                      ? nextEvent.title
+                      : "Statecraft MUN Society 2026"}
+                    {!nextEvent && (
+                      <span className="text-gray-500"> Coming Soon</span>
+                    )}
+                  </h2>
+                  <div className="flex flex-col gap-2 text-gray-400">
+                    <div className="flex items-center gap-2">
+                      <Calendar
+                        size={18}
+                        className="text-[var(--color-gold)]"
+                      />
+                      <span>
+                        {nextEvent ? nextEvent.date : "Dates to be announced"}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Users size={18} className="text-[var(--color-gold)]" />
+                      <span>
+                        {nextEvent
+                          ? nextEvent.location
+                          : "Hansraj College, Delhi University"}
+                      </span>
+                    </div>
+                  </div>
+
+                  {nextEvent && (
+                    <Link
+                      href={`/events/${nextEvent.id}`}
+                      className="inline-block mt-4 px-6 py-3 bg-[var(--color-gold)] text-black font-bold rounded hover:bg-white transition-colors"
+                    >
+                      Register Now
+                    </Link>
                   )}
-                </h2>
-                <div className="flex flex-col gap-2 text-gray-400">
-                  <div className="flex items-center gap-2">
-                    <Calendar size={18} className="text-[var(--color-gold)]" />
-                    <span>
-                      {nextEvent ? nextEvent.date : "Dates to be announced"}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Users size={18} className="text-[var(--color-gold)]" />
-                    <span>
-                      {nextEvent
-                        ? nextEvent.location
-                        : "Hansraj College, Delhi University"}
-                    </span>
-                  </div>
                 </div>
 
-                {nextEvent && (
-                  <Link
-                    href={`/events/${nextEvent.id}`}
-                    className="inline-block mt-4 px-6 py-3 bg-[var(--color-gold)] text-black font-bold rounded hover:bg-white transition-colors"
-                  >
-                    Register Now
-                  </Link>
-                )}
+                {/* Countdown Timer - Dynamic */}
+                <div className="flex gap-4 md:gap-8 text-center">
+                  {[
+                    {
+                      val: String(countdown.days).padStart(2, "0"),
+                      label: "Days",
+                    },
+                    {
+                      val: String(countdown.hours).padStart(2, "0"),
+                      label: "Hours",
+                    },
+                    {
+                      val: String(countdown.mins).padStart(2, "0"),
+                      label: "Mins",
+                    },
+                    {
+                      val: String(countdown.secs).padStart(2, "0"),
+                      label: "Secs",
+                    },
+                  ].map((t, i) => (
+                    <div key={i} className="flex flex-col">
+                      <span className="text-3xl md:text-5xl font-mono font-bold text-white">
+                        {t.val}
+                      </span>
+                      <span className="text-xs uppercase text-gray-500 tracking-wider mt-1">
+                        {t.label}
+                      </span>
+                    </div>
+                  ))}
+                </div>
               </div>
 
-              {/* Countdown Timer - Dynamic */}
-              <div className="flex gap-4 md:gap-8 text-center">
-                {[
-                  {
-                    val: String(countdown.days).padStart(2, "0"),
-                    label: "Days",
-                  },
-                  {
-                    val: String(countdown.hours).padStart(2, "0"),
-                    label: "Hours",
-                  },
-                  {
-                    val: String(countdown.mins).padStart(2, "0"),
-                    label: "Mins",
-                  },
-                  {
-                    val: String(countdown.secs).padStart(2, "0"),
-                    label: "Secs",
-                  },
-                ].map((t, i) => (
-                  <div key={i} className="flex flex-col">
-                    <span className="text-3xl md:text-5xl font-mono font-bold text-white">
-                      {t.val}
-                    </span>
-                    <span className="text-xs uppercase text-gray-500 tracking-wider mt-1">
-                      {t.label}
-                    </span>
-                  </div>
-                ))}
+              <div className="absolute top-0 right-0 p-8 opacity-10">
+                <Globe size={200} />
               </div>
-            </div>
-
-            <div className="absolute top-0 right-0 p-8 opacity-10">
-              <Globe size={200} />
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* PAST HIGHLIGHTS CAROUSEL */}
       <section className="py-24 bg-[#0A0B10] border-t border-white/5 overflow-hidden">
