@@ -8,17 +8,18 @@ datasource db {
 }
 
 model Event {
-  id               String   @id @default(uuid())
-  title            String
-  date             String
-  location         String
-  desc             String
-  status           String
-  registrationLink String?
-  isFeatured       Boolean  @default(false)
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
-  fee              String?
+  id                   String   @id @default(uuid())
+  title                String
+  date                 String
+  location             String
+  desc                 String
+  status               String
+  registrationLink     String?
+  registrationDeadline String?
+  isFeatured           Boolean  @default(false)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+  fee                  String?
 }
 
 model Publication {
@@ -63,6 +64,16 @@ model Category {
 model Setting {
   key       String   @id
   value     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Timeline {
+  id        String   @id @default(uuid())
+  year      String
+  title     String
+  desc      String
+  order     Int      @default(0)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }

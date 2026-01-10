@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Calendar, FileText, Image, Users, Settings, LogOut, Menu, X } from "lucide-react";
+import { LayoutDashboard, Calendar, FileText, Image, Users, Settings, LogOut, Menu, X, Clock } from "lucide-react";
 import clsx from "clsx";
 
 const adminLinks = [
@@ -12,6 +12,7 @@ const adminLinks = [
     { name: "Publications", href: "/admin/publications", icon: FileText },
     { name: "Gallery", href: "/admin/gallery", icon: Image },
     { name: "Team", href: "/admin/team", icon: Users },
+    { name: "Timeline", href: "/admin/timeline", icon: Clock },
     { name: "Settings", href: "/admin/settings", icon: Settings },
 ];
 

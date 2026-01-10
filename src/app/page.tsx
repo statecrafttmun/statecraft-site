@@ -1,35 +1,90 @@
-
 "use client";
 
 import { getEvents, getGallery, getSettings } from "@/actions";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion, useScroll } from "framer-motion";
 import Link from "next/link";
-import { ArrowRight, Globe, Award, Scale, Calendar, Users, ChevronRight } from "lucide-react";
+import {
+  ArrowRight,
+  Globe,
+  Award,
+  Scale,
+  Calendar,
+  Users,
+  ChevronRight,
+} from "lucide-react";
 import { useRef, useState, useEffect } from "react";
 import Image from "next/image";
 
+// Type definitions
+interface ParticleStyle {
+  width: string;
+  height: string;
+  left: string;
+  top: string;
+  duration: number;
+}
+
+interface Event {
+  id: string;
+  title: string;
+  date: string;
+  location: string;
+  desc: string;
+  status: string;
+  registrationLink?: string;
+  fee?: string;
+  isFeatured?: boolean;
+}
+
+interface GalleryImage {
+  id: string;
+  src: string;
+  category?: string;
+  size?: string;
+}
+
+interface Settings {
+  showJoinUs?: boolean;
+  joinUsLink?: string;
+  [key: string]: string | boolean | undefined;
+}
+
 // Simple Particle Background Component
 const ParticleBackground = () => {
-  const [circles, setCircles] = useState<any[]>([]);
+  const [circles, setCircles] = useState<ParticleStyle[]>([]);
 
   useEffect(() => {
-    setCircles([...Array(20)].map(() => ({
-      width: Math.random() * 3 + 1 + "px",
-      height: Math.random() * 3 + 1 + "px",
-      left: Math.random() * 100 + "%",
-      top: Math.random() * 100 + "%",
-      duration: Math.random() * 5 + 5
-    })));
+    const generateCircles = () => {
+      const generated = [...Array(20)].map(() => ({
+        width: Math.random() * 3 + 1 + "px",
+        height: Math.random() * 3 + 1 + "px",
+        left: Math.random() * 100 + "%",
+        top: Math.random() * 100 + "%",
+        duration: Math.random() * 5 + 5,
+      }));
+      setCircles(generated);
+    };
+    // Use requestAnimationFrame to avoid synchronous setState in effect
+    const frameId = requestAnimationFrame(generateCircles);
+    return () => cancelAnimationFrame(frameId);
   }, []);
 
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-[#1a1a1a] via-[#020308] to-[#020308]" />
-      <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'url("/noise.png")' }} />
+      <div
+        className="absolute inset-0 opacity-20"
+        style={{ backgroundImage: 'url("/noise.png")' }}
+      />
       {/* Assuming noise.png exists or falls back to CSS noise if not, using simulated noise via SVG or just dots */}
       <svg className="absolute inset-0 w-full h-full opacity-30">
         <filter id="noiseFilter">
-          <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch" />
+          <feTurbulence
+            type="fractalNoise"
+            baseFrequency="0.65"
+            numOctaves="3"
+            stitchTiles="stitch"
+          />
         </filter>
         <rect width="100%" height="100%" filter="url(#noiseFilter)" />
       </svg>
@@ -61,26 +116,74 @@ const ParticleBackground = () => {
 
 export default function Home() {
   const scrollRef = useRef(null);
-  const { scrollYProgress } = useScroll({ target: scrollRef });
-  const y = useTransform(scrollYProgress, [0, 1], ["0%", "50%"]);
+  useScroll({ target: scrollRef });
 
-  const [nextEvent, setNextEvent] = useState<any>(null);
-  const [gallery, setGallery] = useState<any[]>([]);
-  const [settings, setSettings] = useState<any>({});
+  const [nextEvent, setNextEvent] = useState<Event | null>(null);
+  const [gallery, setGallery] = useState<GalleryImage[]>([]);
+  const [settings, setSettings] = useState<Settings>({});
+  const [countdown, setCountdown] = useState({
+    days: 0,
+    hours: 0,
+    mins: 0,
+    secs: 0,
+  });
 
   useEffect(() => {
     getEvents().then((events) => {
-      // Find the first upcoming event, or just the first event if none marked upcoming
-      const upcoming = events.find((e: any) => e.status === 'Upcoming' || e.status === 'Open') || events[0];
-      setNextEvent(upcoming);
+      // Find the featured event first, then fall back to upcoming/open, then first event
+      const featured = events.find((e) => e.isFeatured);
+      const upcoming =
+        featured ||
+        events.find((e) => e.status === "Upcoming" || e.status === "Open") ||
+        events[0];
+      setNextEvent(upcoming as Event | null);
     });
-    getGallery().then((imgs) => setGallery(imgs));
-    getSettings().then((s) => setSettings(s));
+    getGallery().then((imgs) => setGallery(imgs as GalleryImage[]));
+    getSettings().then((s) => setSettings(s as Settings));
   }, []);
 
-  return (
-    <div ref={scrollRef} className="flex flex-col min-h-screen bg-[#020308] text-white selection:bg-[var(--color-gold)] selection:text-black">
+  // Countdown timer effect
+  useEffect(() => {
+    if (!nextEvent?.date) return;
 
+    const calculateTimeLeft = () => {
+      const eventDate = new Date(nextEvent.date);
+      const now = new Date();
+      const difference = eventDate.getTime() - now.getTime();
+
+      if (difference <= 0) {
+        return { days: 0, hours: 0, mins: 0, secs: 0 };
+      }
+
+      return {
+        days: Math.floor(difference / (1000 * 60 * 60 * 24)),
+        hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
+        mins: Math.floor((difference / (1000 * 60)) % 60),
+        secs: Math.floor((difference / 1000) % 60),
+      };
+    };
+
+    // Use interval for all updates (including initial) to avoid setState in effect body
+    const timer = setInterval(() => {
+      setCountdown(calculateTimeLeft());
+    }, 1000);
+
+    // Immediately invoke the first update using a 0ms timeout
+    const initialTimer = setTimeout(() => {
+      setCountdown(calculateTimeLeft());
+    }, 0);
+
+    return () => {
+      clearInterval(timer);
+      clearTimeout(initialTimer);
+    };
+  }, [nextEvent]);
+
+  return (
+    <div
+      ref={scrollRef}
+      className="flex flex-col min-h-screen bg-[#020308] text-white selection:bg-[var(--color-gold)] selection:text-black"
+    >
       {/* HERO SECTION */}
       <section className="relative h-screen flex flex-col items-center justify-center overflow-hidden px-6">
         <ParticleBackground />
@@ -117,7 +220,12 @@ export default function Home() {
             <div className="relative w-full h-full rounded-2xl md:rounded-3xl border border-white/5 bg-black/50 backdrop-blur-sm flex items-center justify-center overflow-hidden shadow-2xl">
               {/* Try to use the uploaded image if copied, else placeholder text */}
               {/* We copied it to /logo-crest.jpg */}
-              <img src="/logo-crest.jpg" alt="HRCMUN Crest" className="w-full h-full object-contain p-4 opacity-90 drop-shadow-2xl" />
+              <Image
+                src="/logo-crest.jpg"
+                alt="Statecraft MUN Society Crest"
+                fill
+                className="object-contain p-4 opacity-90 drop-shadow-2xl"
+              />
             </div>
           </motion.div>
 
@@ -131,7 +239,8 @@ export default function Home() {
               Diplomacia · Estadista · Honor
             </h2>
             <h1 className="text-4xl md:text-6xl lg:text-7xl font-serif font-bold text-white leading-tight">
-              Hansraj College<br />
+              Hansraj College
+              <br />
               <span className="text-[#A3A3A3]">Model United Nations</span>
             </h1>
           </motion.div>
@@ -165,7 +274,10 @@ export default function Home() {
         <section className="py-24 relative overflow-hidden border-y border-[var(--color-gold)]/30">
           {/* Background with slight gold tint */}
           <div className="absolute inset-0 bg-gradient-to-r from-[#020308] via-[#0f0e08] to-[#020308]" />
-          <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'url("/noise.png")' }} />
+          <div
+            className="absolute inset-0 opacity-10"
+            style={{ backgroundImage: 'url("/noise.png")' }}
+          />
 
           {/* Glowing Pulse Effect in Background */}
           <motion.div
@@ -183,9 +295,12 @@ export default function Home() {
               <span className="inline-block px-3 py-1 mb-4 border border-[var(--color-gold)]/50 rounded-full text-[var(--color-gold)] text-xs tracking-[0.2em] uppercase font-bold bg-[var(--color-gold)]/5">
                 Recruitment Open
               </span>
-              <h2 className="text-4xl md:text-6xl font-serif font-bold mb-6 text-white">Join The Legacy</h2>
+              <h2 className="text-4xl md:text-6xl font-serif font-bold mb-6 text-white">
+                Join The Legacy
+              </h2>
               <p className="text-xl md:text-2xl font-medium mb-10 max-w-2xl mx-auto text-gray-300">
-                The Secretariat awaits. Be part of something greater than yourself.
+                The Secretariat awaits. Be part of something greater than
+                yourself.
               </p>
               <a
                 href={settings.joinUsLink || "#"}
@@ -206,16 +321,30 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
             <div className="space-y-8">
               <h3 className="text-3xl md:text-4xl font-serif font-bold">
-                A Legacy of <span className="text-[var(--color-gold)] italic">Excellence</span>
+                A Legacy of{" "}
+                <span className="text-[var(--color-gold)] italic">
+                  Excellence
+                </span>
               </h3>
               <p className="text-gray-400 leading-relaxed text-lg">
-                Established to foster the spirit of diplomacy, HRCMUN has been a pioneer in creating platforms for young leaders to debate, dissent, and discuss global issues.
+                Established to foster the spirit of diplomacy, Statecraft MUN
+                Society has been a pioneer in creating platforms for young
+                leaders to debate, dissent, and discuss global issues.
               </p>
               <ul className="space-y-6">
                 {[
-                  { icon: Scale, text: "Upholding the highest standards of diplomacy and debate." },
-                  { icon: Globe, text: "Connecting delegates from prestigious institutions worldwide." },
-                  { icon: Award, text: "Award-winning secretariat committed to academic rigor." }
+                  {
+                    icon: Scale,
+                    text: "Upholding the highest standards of diplomacy and debate.",
+                  },
+                  {
+                    icon: Globe,
+                    text: "Connecting delegates from prestigious institutions worldwide.",
+                  },
+                  {
+                    icon: Award,
+                    text: "Award-winning secretariat committed to academic rigor.",
+                  },
                 ].map((item, i) => (
                   <li key={i} className="flex items-start gap-4">
                     <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center shrink-0 text-[var(--color-gold)]">
@@ -231,13 +360,23 @@ export default function Home() {
             <div className="relative aspect-square md:aspect-[4/3] rounded-sm overflow-hidden border border-white/10 glass-panel">
               <div className="absolute inset-0 bg-gradient-to-tr from-[var(--color-gold-light)]/10 to-transparent" />
               <div className="absolute inset-0 flex items-center justify-center">
-                <img src="/logo-crest.jpg" className="w-[80%] h-[80%] object-contain opacity-20 blur-sm" alt="Background Crest" />
+                <div className="relative w-[80%] h-[80%]">
+                  <Image
+                    src="/logo-crest.jpg"
+                    alt="Background Crest"
+                    fill
+                    className="object-contain opacity-20 blur-sm"
+                  />
+                </div>
               </div>
               <div className="absolute bottom-6 left-6 right-6 p-6 glass border-l-4 border-[var(--color-gold)]">
                 <p className="font-serif italic text-lg text-white">
-                  "Diplomacy is the art of telling people to go to hell in such a way that they ask for directions."
+                  &ldquo;Diplomacy is the art of telling people to go to hell in
+                  such a way that they ask for directions.&rdquo;
                 </p>
-                <p className="text-xs text-[var(--color-gold)] mt-2 uppercase tracking-widest">— Winston Churchill</p>
+                <p className="text-xs text-[var(--color-gold)] mt-2 uppercase tracking-widest">
+                  — Winston Churchill
+                </p>
               </div>
             </div>
           </div>
@@ -257,37 +396,65 @@ export default function Home() {
                   UPCOMING CONFERENCE
                 </span>
                 <h2 className="text-4xl md:text-5xl font-serif font-bold text-white leading-none">
-                  {nextEvent ? nextEvent.title : "HRCMUN 2026"}
-                  {!nextEvent && <span className="text-gray-500"> Coming Soon</span>}
+                  {nextEvent ? nextEvent.title : "Statecraft MUN Society 2026"}
+                  {!nextEvent && (
+                    <span className="text-gray-500"> Coming Soon</span>
+                  )}
                 </h2>
                 <div className="flex flex-col gap-2 text-gray-400">
                   <div className="flex items-center gap-2">
                     <Calendar size={18} className="text-[var(--color-gold)]" />
-                    <span>{nextEvent ? nextEvent.date : "Dates to be announced"}</span>
+                    <span>
+                      {nextEvent ? nextEvent.date : "Dates to be announced"}
+                    </span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Users size={18} className="text-[var(--color-gold)]" />
-                    <span>{nextEvent ? nextEvent.location : "Hansraj College, Delhi University"}</span>
+                    <span>
+                      {nextEvent
+                        ? nextEvent.location
+                        : "Hansraj College, Delhi University"}
+                    </span>
                   </div>
                 </div>
 
                 {nextEvent && (
-                  <Link href={`/events/${nextEvent.id}`} className="inline-block mt-4 px-6 py-3 bg-[var(--color-gold)] text-black font-bold rounded hover:bg-white transition-colors">
+                  <Link
+                    href={`/events/${nextEvent.id}`}
+                    className="inline-block mt-4 px-6 py-3 bg-[var(--color-gold)] text-black font-bold rounded hover:bg-white transition-colors"
+                  >
                     Register Now
                   </Link>
                 )}
               </div>
 
-              {/* Countdown Timer Mockup - Could be made dynamic if we had a precise timestamp */}
+              {/* Countdown Timer - Dynamic */}
               <div className="flex gap-4 md:gap-8 text-center">
                 {[
-                  { val: "45", label: "Days" },
-                  { val: "12", label: "Hours" },
-                  { val: "30", label: "Mins" }
+                  {
+                    val: String(countdown.days).padStart(2, "0"),
+                    label: "Days",
+                  },
+                  {
+                    val: String(countdown.hours).padStart(2, "0"),
+                    label: "Hours",
+                  },
+                  {
+                    val: String(countdown.mins).padStart(2, "0"),
+                    label: "Mins",
+                  },
+                  {
+                    val: String(countdown.secs).padStart(2, "0"),
+                    label: "Secs",
+                  },
                 ].map((t, i) => (
                   <div key={i} className="flex flex-col">
-                    <span className="text-3xl md:text-5xl font-mono font-bold text-white">{t.val}</span>
-                    <span className="text-xs uppercase text-gray-500 tracking-wider mt-1">{t.label}</span>
+                    <span className="text-3xl md:text-5xl font-mono font-bold text-white">
+                      {t.val}
+                    </span>
+                    <span className="text-xs uppercase text-gray-500 tracking-wider mt-1">
+                      {t.label}
+                    </span>
                   </div>
                 ))}
               </div>
@@ -300,74 +467,65 @@ export default function Home() {
         </div>
       </section>
 
-      {/* WHY HRCMUN SECTION */}
-      <section className="py-24">
-        <div className="container mx-auto px-6">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl font-serif font-bold mb-4">Why Choose HRCMUN?</h2>
-            <div className="w-20 h-1 bg-[var(--color-gold)] mx-auto" />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
-              { title: "Elite Debate", desc: "Engage in high-level discourse with the best minds in the circuit.", delay: 0 },
-              { title: "Networking", desc: "Build connections with diplomats, policy-makers, and future leaders.", delay: 0.2 },
-              { title: "Legacy", desc: "Be part of a historic institution with years of excellence.", delay: 0.4 }
-            ].map((card, idx) => (
-              <motion.div
-                key={idx}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ delay: card.delay }}
-                viewport={{ once: true }}
-                className="group p-8 glass-panel rounded-xl border border-white/5 hover:border-[var(--color-gold)]/50 transition-all duration-300 hover:-translate-y-2 relative overflow-hidden"
-              >
-                <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-[var(--color-gold)] to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                <h3 className="text-xl font-bold mb-4 group-hover:text-[var(--color-gold)] transition-colors">{card.title}</h3>
-                <p className="text-gray-400">{card.desc}</p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* PAST HIGHLIGHTS CAROUSEL */}
       <section className="py-24 bg-[#0A0B10] border-t border-white/5 overflow-hidden">
         <div className="container mx-auto px-6 mb-12 flex justify-between items-end">
           <div>
-            <h2 className="text-3xl font-serif font-bold mb-2">Past Highlights</h2>
-            <p className="text-gray-500">Moments from our previous conferences.</p>
+            <h2 className="text-3xl font-serif font-bold mb-2">
+              Past Highlights
+            </h2>
+            <p className="text-gray-500">
+              Moments from our previous conferences.
+            </p>
           </div>
-          <Link href="/gallery" className="text-[var(--color-gold)] text-sm font-bold tracking-wide flex items-center gap-2 hover:underline">
+          <Link
+            href="/gallery"
+            className="text-[var(--color-gold)] text-sm font-bold tracking-wide flex items-center gap-2 hover:underline"
+          >
             View Gallery <ArrowRight size={16} />
           </Link>
         </div>
 
         <div className="flex gap-6 overflow-x-auto pb-12 px-6 snap-x no-scrollbar">
-          {gallery.length > 0 ? gallery.map((item, index) => (
-            <div key={item.id || index} className="snap-center shrink-0 w-[300px] md:w-[400px] aspect-[4/3] rounded-lg overflow-hidden relative group border border-white/10">
-              {item.src ? (
-                <img src={item.src} alt={item.category || "Highlight"} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
-              ) : (
-                <div className="w-full h-full bg-gray-800 animate-pulse" />
-              )}
-              <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-80" />
-              <div className="absolute bottom-0 left-0 p-6 translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
-                <span className="text-xs text-[var(--color-gold)] font-bold mb-1 block uppercase">{item.category || "Conference"}</span>
-                <h4 className="text-xl font-bold text-white">HRCMUN Highlights</h4>
-              </div>
-            </div>
-          )) : (
-            // Fallback if no gallery data
-            [1, 2, 3].map((i) => (
-              <div key={i} className="snap-center shrink-0 w-[300px] md:w-[400px] aspect-[4/3] rounded-lg overflow-hidden relative group bg-white/5 border border-white/10 flex items-center justify-center">
-                <span className="text-gray-600">No images available</span>
-              </div>
-            ))
-          )}
+          {gallery.length > 0
+            ? gallery.map((item, index) => (
+                <div
+                  key={item.id || index}
+                  className="snap-center shrink-0 w-[300px] md:w-[400px] aspect-[4/3] rounded-lg overflow-hidden relative group border border-white/10"
+                >
+                  {item.src ? (
+                    // Using img tag for external URLs that may come from various hosts
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={item.src}
+                      alt={item.category || "Highlight"}
+                      className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-gray-800 animate-pulse" />
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-80" />
+                  <div className="absolute bottom-0 left-0 p-6 translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
+                    <span className="text-xs text-[var(--color-gold)] font-bold mb-1 block uppercase">
+                      {item.category || "Conference"}
+                    </span>
+                    <h4 className="text-xl font-bold text-white">
+                      Statecraft MUN Society Highlights
+                    </h4>
+                  </div>
+                </div>
+              ))
+            : // Fallback if no gallery data
+              [1, 2, 3].map((i) => (
+                <div
+                  key={i}
+                  className="snap-center shrink-0 w-[300px] md:w-[400px] aspect-[4/3] rounded-lg overflow-hidden relative group bg-white/5 border border-white/10 flex items-center justify-center"
+                >
+                  <span className="text-gray-600">No images available</span>
+                </div>
+              ))}
         </div>
       </section>
-
     </div>
   );
 }

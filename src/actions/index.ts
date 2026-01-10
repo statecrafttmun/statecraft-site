@@ -4,6 +4,16 @@ import { revalidatePath } from "next/cache";
 import { createClient, createStaticClient } from "@/utils/supabase/server";
 import { cookies } from "next/headers";
 import { randomUUID } from "crypto";
+import type {
+  EventInput,
+  PublicationInput,
+  GalleryImageInput,
+  TeamMemberInput,
+  TimelineInput,
+  SettingsObject,
+  Category,
+  Setting,
+} from "@/types";
 
 // Helper to get supabase instance
 async function getSupabase() {
@@ -44,6 +54,38 @@ export async function getStaticPublications() {
   }
 }
 
+export async function getStaticTimeline() {
+  try {
+    const supabase = createStaticClient();
+    const { data, error } = await supabase
+      .from("Timeline")
+      .select("*")
+      .order("order", { ascending: false });
+
+    if (error) throw error;
+    return data || [];
+  } catch (error) {
+    console.error("Error fetching static timeline:", error);
+    return [];
+  }
+}
+
+export async function getStaticTeam() {
+  try {
+    const supabase = createStaticClient();
+    const { data, error } = await supabase
+      .from("TeamMember")
+      .select("*")
+      .order("createdAt", { ascending: true });
+
+    if (error) throw error;
+    return data || [];
+  } catch (error) {
+    console.error("Error fetching static team:", error);
+    return [];
+  }
+}
+
 // --- Events ---
 export async function getEvents() {
   try {
@@ -78,9 +120,23 @@ export async function getEventById(id: string) {
   }
 }
 
-export async function saveEvent(event: any) {
+export async function saveEvent(event: EventInput) {
   try {
     const supabase = await getSupabase();
+
+    // If this event is being marked as featured, unmark all other featured events
+    if (event.isFeatured) {
+      const { error: unfeaturedError } = await supabase
+        .from("Event")
+        .update({ isFeatured: false, updatedAt: new Date().toISOString() })
+        .eq("isFeatured", true)
+        .neq("id", event.id || "");
+
+      if (unfeaturedError) {
+        console.error("Error unfeaturing other events:", unfeaturedError);
+      }
+    }
+
     const eventData = {
       title: event.title,
       date: event.date,
@@ -102,13 +158,11 @@ export async function saveEvent(event: any) {
       if (error) throw error;
       result = { success: true };
     } else {
-      const { error } = await supabase
-        .from("Event")
-        .insert({
-          id: randomUUID(),
-          ...eventData,
-          createdAt: new Date().toISOString(),
-        });
+      const { error } = await supabase.from("Event").insert({
+        id: randomUUID(),
+        ...eventData,
+        createdAt: new Date().toISOString(),
+      });
       if (error) throw error;
       result = { success: true };
     }
@@ -172,7 +226,7 @@ export async function getPublicationById(id: string) {
   }
 }
 
-export async function savePublication(pub: any) {
+export async function savePublication(pub: PublicationInput) {
   try {
     const supabase = await getSupabase();
     const data = {
@@ -193,13 +247,11 @@ export async function savePublication(pub: any) {
         .eq("id", String(pub.id));
       if (error) throw error;
     } else {
-      const { error } = await supabase
-        .from("Publication")
-        .insert({
-          id: randomUUID(),
-          ...data,
-          createdAt: new Date().toISOString(),
-        });
+      const { error } = await supabase.from("Publication").insert({
+        id: randomUUID(),
+        ...data,
+        createdAt: new Date().toISOString(),
+      });
       if (error) throw error;
     }
     revalidatePath("/publications");
@@ -248,7 +300,7 @@ export async function getGallery() {
   }
 }
 
-export async function saveGalleryImage(img: any) {
+export async function saveGalleryImage(img: GalleryImageInput) {
   try {
     const supabase = await getSupabase();
     const { error } = await supabase.from("GalleryImage").insert({
@@ -303,7 +355,7 @@ export async function getTeam() {
   }
 }
 
-export async function saveTeamMember(member: any) {
+export async function saveTeamMember(member: TeamMemberInput) {
   try {
     const supabase = await getSupabase();
     const memberData = {
@@ -365,7 +417,7 @@ export async function getSettings() {
     if (error) throw error;
 
     const settings = data || [];
-    return settings.reduce((acc: any, curr: any) => {
+    return settings.reduce((acc: SettingsObject, curr: Setting) => {
       acc[curr.key] =
         curr.value === "true"
           ? true
@@ -373,14 +425,14 @@ export async function getSettings() {
           ? false
           : curr.value;
       return acc;
-    }, {});
+    }, {} as SettingsObject);
   } catch (error) {
     console.error("Error fetching settings:", error);
     return {};
   }
 }
 
-export async function saveSettings(settings: any) {
+export async function saveSettings(settings: SettingsObject) {
   try {
     const supabase = await getSupabase();
     for (const [key, value] of Object.entries(settings)) {
@@ -414,7 +466,7 @@ export async function getCategories() {
     const { data, error } = await supabase.from("Category").select("*");
 
     if (error) throw error;
-    return (data || []).map((c: any) => c.name);
+    return (data || []).map((c: Category) => c.name);
   } catch (error) {
     console.error("Error fetching categories:", error);
     return [];
@@ -461,6 +513,74 @@ export async function deleteCategory(category: string) {
     return { success: true };
   } catch (error) {
     console.error("Error deleting category:", error);
+    return { success: false, error };
+  }
+}
+
+// --- Timeline ---
+export async function getTimeline() {
+  try {
+    const supabase = await getSupabase();
+    const { data, error } = await supabase
+      .from("Timeline")
+      .select("*")
+      .order("order", { ascending: false });
+
+    if (error) throw error;
+    return data || [];
+  } catch (error) {
+    console.error("Error fetching timeline:", error);
+    return [];
+  }
+}
+
+export async function saveTimelineItem(item: TimelineInput) {
+  try {
+    const supabase = await getSupabase();
+    const itemData = {
+      year: item.year,
+      title: item.title,
+      desc: item.desc,
+      order: item.order || 0,
+      updatedAt: new Date().toISOString(),
+    };
+
+    if (item.id) {
+      const { error } = await supabase
+        .from("Timeline")
+        .update(itemData)
+        .eq("id", item.id);
+      if (error) throw error;
+    } else {
+      const { error } = await supabase.from("Timeline").insert({
+        id: randomUUID(),
+        ...itemData,
+        createdAt: new Date().toISOString(),
+      });
+      if (error) throw error;
+    }
+
+    revalidatePath("/about");
+    revalidatePath("/admin/timeline");
+    return { success: true };
+  } catch (error) {
+    console.error("Error saving timeline item:", error);
+    return { success: false, error };
+  }
+}
+
+export async function deleteTimelineItem(id: string) {
+  try {
+    const supabase = await getSupabase();
+    const { error } = await supabase.from("Timeline").delete().eq("id", id);
+
+    if (error) throw error;
+
+    revalidatePath("/about");
+    revalidatePath("/admin/timeline");
+    return { success: true };
+  } catch (error) {
+    console.error("Error deleting timeline item:", error);
     return { success: false, error };
   }
 }

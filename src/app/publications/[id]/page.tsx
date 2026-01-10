@@ -15,6 +15,18 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     return {
         title: pub.title,
         description: pub.excerpt,
+        openGraph: {
+            title: pub.title,
+            description: pub.excerpt,
+            type: "article",
+            url: `https://statecrafthansraj.info/publications/${id}`,
+            authors: [pub.author],
+        },
+        twitter: {
+            card: "summary_large_image",
+            title: pub.title,
+            description: pub.excerpt,
+        },
     };
 }
 
