@@ -47,7 +47,7 @@ export default function ArticleView({ pub }: { pub: ArticleData }) {
             href="/publications"
             className="inline-flex items-center gap-2 text-gray-500 hover:text-[var(--color-gold)] mb-8 transition-colors text-sm font-bold uppercase tracking-widest"
           >
-            <ArrowLeft size={16} /> Back to Publications
+            <ArrowLeft size={16} /> Back to Blog
           </Link>
 
           <h1 className="text-4xl md:text-6xl font-serif font-bold text-white mb-6 leading-tight">

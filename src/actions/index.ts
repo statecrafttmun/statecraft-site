@@ -359,29 +359,112 @@ export async function getTeam() {
 export async function saveTeamMember(member: TeamMemberInput) {
   try {
     const supabase = await getSupabase();
-    const memberData = {
+    const memberDataBase = {
       name: member.name,
       role: member.role,
       image: member.image,
       quote: member.quote,
+      // image focus defaults (used by cards via object-position)
+      imageFocusX: typeof member.imageFocusX === "number" ? member.imageFocusX : 50,
+      imageFocusY: typeof member.imageFocusY === "number" ? member.imageFocusY : 20,
       updatedAt: new Date().toISOString(),
+    };
+
+    const memberDataWithSenior = {
+      ...memberDataBase,
+      isSenior: member.isSenior ?? false,
     };
 
     if (member.id) {
       // Update existing member
       const { error } = await supabase
         .from("TeamMember")
-        .update(memberData)
+        .update(memberDataWithSenior)
         .eq("id", member.id);
-      if (error) throw error;
+
+      // If the DB doesn't have the new columns yet, fall back gracefully.
+      if (error) {
+        const msg =
+          typeof error === "object" && error && "message" in error
+            ? String((error as { message?: unknown }).message)
+            : String(error);
+
+        const isMissingIsSenior = msg.includes("isSenior") && msg.includes("column");
+        const isMissingImageFocusX = msg.includes("imageFocusX") && msg.includes("column");
+        const isMissingImageFocusY = msg.includes("imageFocusY") && msg.includes("column");
+
+        if (isMissingIsSenior || isMissingImageFocusX || isMissingImageFocusY) {
+          // Retry without the missing fields.
+          const fallback: Record<string, unknown> = {
+            name: member.name,
+            role: member.role,
+            image: member.image,
+            quote: member.quote,
+            updatedAt: new Date().toISOString(),
+          };
+          // Keep isSenior if it exists
+          if (!isMissingIsSenior) fallback.isSenior = member.isSenior ?? false;
+          // Keep focus fields if they exist
+          if (!isMissingImageFocusX)
+            fallback.imageFocusX =
+              typeof member.imageFocusX === "number" ? member.imageFocusX : 50;
+          if (!isMissingImageFocusY)
+            fallback.imageFocusY =
+              typeof member.imageFocusY === "number" ? member.imageFocusY : 20;
+
+          const { error: fallbackError } = await supabase
+            .from("TeamMember")
+            .update(fallback)
+            .eq("id", member.id);
+          if (fallbackError) throw fallbackError;
+        } else {
+          throw error;
+        }
+      }
     } else {
       // Insert new member
       const { error } = await supabase.from("TeamMember").insert({
         id: randomUUID(),
-        ...memberData,
+        ...memberDataWithSenior,
         createdAt: new Date().toISOString(),
       });
-      if (error) throw error;
+
+      if (error) {
+        const msg =
+          typeof error === "object" && error && "message" in error
+            ? String((error as { message?: unknown }).message)
+            : String(error);
+
+        const isMissingIsSenior = msg.includes("isSenior") && msg.includes("column");
+        const isMissingImageFocusX = msg.includes("imageFocusX") && msg.includes("column");
+        const isMissingImageFocusY = msg.includes("imageFocusY") && msg.includes("column");
+
+        if (isMissingIsSenior || isMissingImageFocusX || isMissingImageFocusY) {
+          const fallback: Record<string, unknown> = {
+            id: randomUUID(),
+            name: member.name,
+            role: member.role,
+            image: member.image,
+            quote: member.quote,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          };
+          if (!isMissingIsSenior) fallback.isSenior = member.isSenior ?? false;
+          if (!isMissingImageFocusX)
+            fallback.imageFocusX =
+              typeof member.imageFocusX === "number" ? member.imageFocusX : 50;
+          if (!isMissingImageFocusY)
+            fallback.imageFocusY =
+              typeof member.imageFocusY === "number" ? member.imageFocusY : 20;
+
+          const { error: fallbackError } = await supabase
+            .from("TeamMember")
+            .insert(fallback);
+          if (fallbackError) throw fallbackError;
+        } else {
+          throw error;
+        }
+      }
     }
 
     revalidatePath("/about");

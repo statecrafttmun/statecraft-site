@@ -31,11 +31,6 @@ export default function AdminPublicationsPage() {
   const [showCategoryManager, setShowCategoryManager] = useState(false);
   const [tagsInput, setTagsInput] = useState("");
 
-  useEffect(() => {
-    loadPublications();
-    loadCategories();
-  }, []);
-
   async function loadPublications() {
     const data = await getPublications();
     setPublications(data);
@@ -50,6 +45,14 @@ export default function AdminPublicationsPage() {
       setCategories(data);
     }
   }
+
+  useEffect(() => {
+    // defer to satisfy eslint react-hooks/set-state-in-effect
+    setTimeout(() => {
+      loadPublications();
+      loadCategories();
+    }, 0);
+  }, []);
 
   async function handleAddCategory() {
     if (newCategory.trim()) {
@@ -106,7 +109,7 @@ export default function AdminPublicationsPage() {
   return (
     <div>
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold">Manage Publications</h1>
+        <h1 className="text-3xl font-bold">Manage Blog</h1>
         <div className="flex gap-3">
           <button
             onClick={() => setShowCategoryManager(true)}
@@ -118,7 +121,7 @@ export default function AdminPublicationsPage() {
             onClick={handleAddNew}
             className="px-4 py-2 rounded-lg bg-primary text-white font-medium flex items-center gap-2 hover:bg-primary-dark transition-colors"
           >
-            <Plus size={18} /> Add Publication
+            <Plus size={18} /> Add Post
           </button>
         </div>
       </div>

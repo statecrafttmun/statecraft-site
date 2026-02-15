@@ -82,7 +82,7 @@ export default function PublicationsPage() {
           Research & Insights
         </span>
         <h1 className="text-4xl md:text-6xl font-serif font-bold text-white mb-6">
-          Publications
+          Blog
         </h1>
         <p className="text-gray-400 max-w-2xl mx-auto text-lg leading-relaxed">
           Explore our repository of background guides, research papers, and

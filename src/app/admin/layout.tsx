@@ -9,7 +9,7 @@ import clsx from "clsx";
 const adminLinks = [
     { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
     { name: "Events", href: "/admin/events", icon: Calendar },
-    { name: "Publications", href: "/admin/publications", icon: FileText },
+    { name: "Blog", href: "/admin/publications", icon: FileText },
     { name: "Gallery", href: "/admin/gallery", icon: Image },
     { name: "Team", href: "/admin/team", icon: Users },
     { name: "Timeline", href: "/admin/timeline", icon: Clock },

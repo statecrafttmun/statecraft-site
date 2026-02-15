@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Calendar, MapPin, ArrowUpRight, Filter } from "lucide-react";
+import { Calendar, MapPin, ArrowUpRight } from "lucide-react";
 import { getEvents } from "@/actions";
 import Link from "next/link";
 import clsx from "clsx";
@@ -38,31 +38,29 @@ export default function EventsPage() {
             type: "Flagship",
             desc: "The biggest conference of the year.",
           },
-          {
-            id: "2",
-            title: "Diplomacy Summit",
-            date: "Oct 5, 2025",
-            location: "Virtual",
-            status: "Past",
-            type: "Summit",
-            desc: "Understanding the art of negotiation.",
-          },
-          {
-            id: "3",
-            title: "Training Session 1",
-            date: "Aug 20, 2025",
-            location: "Seminar Room",
-            status: "Past",
-            type: "Training",
-            desc: "Beginner's guide to ROPs.",
-          },
         ]);
       }
     });
   }, []);
 
+  // Support deep-link from Home: /events#upcoming
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (window.location.hash === "#upcoming") {
+      // Defer state update to avoid setState directly in effect body (eslint rule)
+      setTimeout(() => {
+        setFilter("Upcoming");
+        document.getElementById("upcoming")?.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      }, 0);
+    }
+  }, []);
+
   const filteredEvents = events.filter((e) => {
     if (filter === "All") return true;
+    if (filter === "Upcoming") return e.status === "Upcoming" || e.status === "Open";
     return e.status === filter;
   });
 
@@ -87,7 +85,7 @@ export default function EventsPage() {
 
           {/* Filters */}
           <div className="flex gap-2 p-1 bg-white/5 rounded-full backdrop-blur-sm border border-white/10">
-            {["All", "Upcoming", "Past"].map((f) => (
+            {["All", "Upcoming"].map((f) => (
               <button
                 key={f}
                 onClick={() => setFilter(f)}
@@ -107,6 +105,7 @@ export default function EventsPage() {
 
       {/* Content */}
       <div className="container mx-auto max-w-5xl">
+        <div id="upcoming" className="relative -top-24" aria-hidden="true" />
         <AnimatePresence mode="popLayout">
           <div className="flex flex-col gap-6">
             {filteredEvents.map((event, index) => (

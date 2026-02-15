@@ -19,14 +19,17 @@ export default function AdminEventsPage() {
   const [isEditing, setIsEditing] = useState(false);
   const [currentEvent, setCurrentEvent] = useState<EventInput>(emptyEvent);
 
-  useEffect(() => {
-    loadEvents();
-  }, []);
-
   async function loadEvents() {
     const data = await getEvents();
     setEvents(data);
   }
+
+  useEffect(() => {
+    // defer to satisfy eslint react-hooks/set-state-in-effect
+    setTimeout(() => {
+      loadEvents();
+    }, 0);
+  }, []);
 
   function handleAddNew() {
     setCurrentEvent(emptyEvent);

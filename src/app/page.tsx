@@ -51,7 +51,7 @@ interface Settings {
 }
 
 // Simple Particle Background Component
-const ParticleBackground = () => {
+const ParticleBackground = ({ bgUrl }: { bgUrl?: string }) => {
   const [circles, setCircles] = useState<ParticleStyle[]>([]);
 
   useEffect(() => {
@@ -76,8 +76,9 @@ const ParticleBackground = () => {
       <div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
         style={{
-          backgroundImage:
-            'url("https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072&auto=format&fit=crop")',
+          backgroundImage: `url("${bgUrl || "https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072&auto=format&fit=crop"}")`,
+          backgroundPosition: "center",
+          backgroundSize: "cover",
         }}
       />
       <div className="absolute inset-0 bg-gradient-to-b from-[#020308]/80 via-[#020308]/90 to-[#020308]" />
@@ -195,7 +196,13 @@ export default function Home() {
     >
       {/* HERO SECTION */}
       <section className="relative h-screen flex flex-col items-center justify-center overflow-hidden px-6">
-        <ParticleBackground />
+        <ParticleBackground
+          bgUrl={
+            typeof settings.homeHeroBgImage === "string"
+              ? settings.homeHeroBgImage
+              : undefined
+          }
+        />
 
         {/* Animated Wireframe Globe (Simulated with rotating rings) */}
         <div className="absolute inset-0 flex items-center justify-center opacity-10 pointer-events-none">
@@ -261,7 +268,7 @@ export default function Home() {
             className="flex flex-col sm:flex-row gap-4 mt-8 w-full sm:w-auto"
           >
             <Link
-              href="/events"
+              href="/events#upcoming"
               className="px-8 py-4 bg-[var(--color-gold)] text-[#020308] font-bold tracking-wide rounded-sm hover:bg-white transition-colors duration-300 flex items-center justify-center gap-2"
             >
               Join Next Conference
@@ -323,74 +330,6 @@ export default function Home() {
           </div>
         </section>
       )}
-
-      {/* ABOUT TEASER */}
-      <section className="py-20 md:py-32 relative">
-        <div className="container mx-auto px-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
-            <div className="space-y-8">
-              <h3 className="text-3xl md:text-4xl font-serif font-bold">
-                A Legacy of{" "}
-                <span className="text-[var(--color-gold)] italic">
-                  Excellence
-                </span>
-              </h3>
-              <p className="text-gray-400 leading-relaxed text-lg">
-                Established to foster the spirit of diplomacy, Statecraft MUN
-                Society has been a pioneer in creating platforms for young
-                leaders to debate, dissent, and discuss global issues.
-              </p>
-              <ul className="space-y-6">
-                {[
-                  {
-                    icon: Scale,
-                    text: "Upholding the highest standards of diplomacy and debate.",
-                  },
-                  {
-                    icon: Globe,
-                    text: "Connecting delegates from prestigious institutions worldwide.",
-                  },
-                  {
-                    icon: Award,
-                    text: "Award-winning secretariat committed to academic rigor.",
-                  },
-                ].map((item, i) => (
-                  <li key={i} className="flex items-start gap-4">
-                    <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center shrink-0 text-[var(--color-gold)]">
-                      <item.icon size={20} />
-                    </div>
-                    <span className="text-gray-300 mt-2">{item.text}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Decorative Grid/Image Area */}
-            <div className="relative aspect-square md:aspect-[4/3] rounded-sm overflow-hidden border border-white/10 glass-panel">
-              <div className="absolute inset-0 bg-gradient-to-tr from-[var(--color-gold-light)]/10 to-transparent" />
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="relative w-[80%] h-[80%]">
-                  <Image
-                    src="/logo-crest.jpg"
-                    alt="Background Crest"
-                    fill
-                    className="object-contain opacity-20 blur-sm"
-                  />
-                </div>
-              </div>
-              <div className="absolute bottom-6 left-6 right-6 p-6 glass border-l-4 border-[var(--color-gold)]">
-                <p className="font-serif italic text-lg text-white">
-                  &ldquo;Diplomacy is the art of telling people to go to hell in
-                  such a way that they ask for directions.&rdquo;
-                </p>
-                <p className="text-xs text-[var(--color-gold)] mt-2 uppercase tracking-widest">
-                  — Winston Churchill
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* NEXT EVENT HIGHLIGHT */}
       {settings.showUpcomingConferences !== false && (
@@ -482,6 +421,74 @@ export default function Home() {
           </div>
         </section>
       )}
+
+      {/* ABOUT TEASER */}
+      <section className="py-20 md:py-32 relative">
+        <div className="container mx-auto px-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
+            <div className="space-y-8">
+              <h3 className="text-3xl md:text-4xl font-serif font-bold">
+                A Legacy of{" "}
+                <span className="text-[var(--color-gold)] italic">
+                  Excellence
+                </span>
+              </h3>
+              <p className="text-gray-400 leading-relaxed text-lg">
+                Established to foster the spirit of diplomacy, Statecraft MUN
+                Society has been a pioneer in creating platforms for young
+                leaders to debate, dissent, and discuss global issues.
+              </p>
+              <ul className="space-y-6">
+                {[
+                  {
+                    icon: Scale,
+                    text: "Upholding the highest standards of diplomacy and debate.",
+                  },
+                  {
+                    icon: Globe,
+                    text: "Connecting delegates from prestigious institutions worldwide.",
+                  },
+                  {
+                    icon: Award,
+                    text: "Award-winning secretariat committed to academic rigor.",
+                  },
+                ].map((item, i) => (
+                  <li key={i} className="flex items-start gap-4">
+                    <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center shrink-0 text-[var(--color-gold)]">
+                      <item.icon size={20} />
+                    </div>
+                    <span className="text-gray-300 mt-2">{item.text}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Decorative Grid/Image Area */}
+            <div className="relative aspect-square md:aspect-[4/3] rounded-sm overflow-hidden border border-white/10 glass-panel">
+              <div className="absolute inset-0 bg-gradient-to-tr from-[var(--color-gold-light)]/10 to-transparent" />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="relative w-[80%] h-[80%]">
+                  <Image
+                    src="/logo-crest.jpg"
+                    alt="Background Crest"
+                    fill
+                    className="object-contain opacity-20 blur-sm"
+                  />
+                </div>
+              </div>
+              <div className="absolute bottom-6 left-6 right-6 p-6 glass border-l-4 border-[var(--color-gold)]">
+                <p className="font-serif italic text-lg text-white">
+                  &ldquo;Diplomacy is the art of telling people to go to hell in
+                  such a way that they ask for directions.&rdquo;
+                </p>
+                <p className="text-xs text-[var(--color-gold)] mt-2 uppercase tracking-widest">
+                  — Winston Churchill
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* PAST HIGHLIGHTS CAROUSEL */}
       <section className="py-24 bg-[#0A0B10] border-t border-white/5 overflow-hidden">

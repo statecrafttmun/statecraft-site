@@ -1,19 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import {
-  Users,
-  Target,
-  Heart,
-  User,
-  Award,
-  Scale,
-  Globe,
-  BookOpen,
-} from "lucide-react";
+import { motion } from "framer-motion";
+import { User, Award, Scale, Globe } from "lucide-react";
 import { getTeam, getTimeline } from "@/actions";
-import type { TeamMember, Timeline } from "@/types";
 
 // Local type for team/timeline that can be either from database or mock data
 interface TeamMemberDisplay {
@@ -21,8 +11,11 @@ interface TeamMemberDisplay {
   name: string;
   role: string;
   image: string;
+  imageFocusX?: number | null;
+  imageFocusY?: number | null;
   bio?: string;
   quote?: string | null;
+  isSenior?: boolean | null;
 }
 
 interface TimelineDisplay {
@@ -47,22 +40,27 @@ const TeamCard = ({ member }: { member: TeamMemberDisplay }) => {
         animate={{ rotateY: isFlipped ? 180 : 0 }}
       >
         {/* FRONT */}
-        <div className="absolute inset-0 backface-hidden rounded-2xl overflow-hidden glass-panel border border-white/10 group hover:border-[var(--color-gold)]/50 transition-colors">
-          <div className="h-2/3 bg-gray-800 relative">
+        <div className="absolute inset-0 backface-hidden rounded-2xl overflow-hidden glass-panel border border-white/10 group hover:border-[var(--color-gold)]/50 transition-colors flex flex-col">
+          {/* Image frame: keeps faces from stretching/cropping weirdly */}
+          <div className="relative w-full aspect-square bg-gray-800">
             {member.image ? (
               <img
                 src={member.image}
                 alt={member.name}
-                className="w-full h-full object-cover"
+                className="absolute inset-0 w-full h-full object-cover"
+                style={{
+                  objectPosition: `${member.imageFocusX ?? 50}% ${member.imageFocusY ?? 20}%`,
+                }}
               />
             ) : (
-              <div className="w-full h-full flex items-center justify-center bg-white/5">
+              <div className="absolute inset-0 w-full h-full flex items-center justify-center bg-white/5">
                 <User size={64} className="text-gray-600" />
               </div>
             )}
-            <div className="absolute inset-0 bg-gradient-to-t from-[#050509] to-transparent opacity-80" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#050509] via-transparent to-transparent opacity-80" />
           </div>
-          <div className="absolute bottom-0 left-0 right-0 p-6">
+
+          <div className="relative flex-1 p-6 flex flex-col justify-end">
             <h3 className="text-xl font-bold text-white mb-1 font-serif">
               {member.name}
             </h3>
@@ -88,11 +86,11 @@ const TeamCard = ({ member }: { member: TeamMemberDisplay }) => {
             {member.role}
           </p>
           <p className="text-sm font-medium leading-relaxed opacity-80 italic">
-            "
+            &ldquo;
             {member.quote ||
               member.bio ||
               "A dedicated member of the Secretariat."}
-            "
+            &rdquo;
           </p>
         </div>
       </motion.div>
@@ -104,6 +102,9 @@ export default function AboutPage() {
   const [team, setTeam] = useState<TeamMemberDisplay[]>([]);
   const [timeline, setTimeline] = useState<TimelineDisplay[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  const seniorTeam = team.filter((m) => !!m.isSenior);
+  const coreTeam = team.filter((m) => !m.isSenior);
 
   useEffect(() => {
     // Fetch team and timeline data from database
@@ -281,10 +282,38 @@ export default function AboutPage() {
             </h2>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            {team.map((member, i) => (
-              <TeamCard key={i} member={member} />
-            ))}
+          {seniorTeam.length > 0 && (
+            <div className="mb-16">
+              <div className="text-center mb-10">
+                <span className="text-gray-400 tracking-[0.2em] text-[10px] font-bold uppercase">
+                  Senior Team
+                </span>
+                <h3 className="text-3xl font-serif font-bold mt-2">
+                  Senior Secretariat
+                </h3>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                {seniorTeam.map((member, i) => (
+                  <TeamCard key={`senior-${i}`} member={member} />
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div>
+            <div className="text-center mb-10">
+              <span className="text-gray-400 tracking-[0.2em] text-[10px] font-bold uppercase">
+                Core Team
+              </span>
+              <h3 className="text-3xl font-serif font-bold mt-2">
+                Core Secretariat
+              </h3>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+              {coreTeam.map((member, i) => (
+                <TeamCard key={`core-${i}`} member={member} />
+              ))}
+            </div>
           </div>
         </div>
       </section>

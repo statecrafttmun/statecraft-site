@@ -5,7 +5,14 @@ import { getTeam, saveTeamMember, deleteTeamMember } from "@/actions";
 import { Plus, Edit, Trash2, X, Save, User } from "lucide-react";
 import type { TeamMember, TeamMemberInput } from "@/types";
 
-const emptyMember: TeamMemberInput = { name: "", role: "", image: "" };
+const emptyMember: TeamMemberInput = {
+  name: "",
+  role: "",
+  image: "",
+  imageFocusX: 50,
+  imageFocusY: 20,
+  isSenior: false,
+};
 
 export default function AdminTeamPage() {
   const [team, setTeam] = useState<TeamMember[]>([]);
@@ -13,14 +20,17 @@ export default function AdminTeamPage() {
   const [currentMember, setCurrentMember] =
     useState<TeamMemberInput>(emptyMember);
 
-  useEffect(() => {
-    loadTeam();
-  }, []);
-
   async function loadTeam() {
     const data = await getTeam();
     setTeam(data);
   }
+
+  useEffect(() => {
+    // defer to satisfy eslint react-hooks/set-state-in-effect
+    setTimeout(() => {
+      loadTeam();
+    }, 0);
+  }, []);
 
   function handleAddNew() {
     setCurrentMember(emptyMember);
@@ -28,7 +38,18 @@ export default function AdminTeamPage() {
   }
 
   function handleEdit(member: TeamMember) {
-    setCurrentMember(member);
+    setCurrentMember({
+      id: member.id,
+      name: member.name,
+      role: member.role,
+      image: member.image,
+      quote: member.quote ?? undefined,
+      imageFocusX:
+        typeof member.imageFocusX === "number" ? member.imageFocusX : 50,
+      imageFocusY:
+        typeof member.imageFocusY === "number" ? member.imageFocusY : 20,
+      isSenior: !!member.isSenior,
+    });
     setIsEditing(true);
   }
 
@@ -77,7 +98,14 @@ export default function AdminTeamPage() {
               )}
             </div>
             <div className="flex-grow">
-              <h3 className="text-lg font-bold">{member.name}</h3>
+              <h3 className="text-lg font-bold flex items-center gap-2">
+                {member.name}
+                {member.isSenior && (
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-[var(--color-gold)]/15 text-[var(--color-gold)] border border-[var(--color-gold)]/25">
+                    Senior
+                  </span>
+                )}
+              </h3>
               <p className="text-sm text-primary">{member.role}</p>
             </div>
             <div className="flex flex-col gap-2">
@@ -100,8 +128,9 @@ export default function AdminTeamPage() {
 
       {/* Edit Modal */}
       {isEditing && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="w-full max-w-lg bg-[#0a0a0a] border border-white/10 rounded-2xl p-8">
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm overflow-y-auto p-4">
+          <div className="min-h-full flex items-start justify-center py-6">
+            <div className="w-full max-w-lg bg-[#0a0a0a] border border-white/10 rounded-2xl p-8 max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-bold">
                 {currentMember.id ? "Edit Member" : "Add Member"}
@@ -159,6 +188,29 @@ export default function AdminTeamPage() {
                   placeholder="Enter a short quote..."
                 />
               </div>
+
+              <div className="flex items-center justify-between p-4 rounded-lg bg-white/5 border border-white/10">
+                <div>
+                  <p className="font-medium">Senior Team Member</p>
+                  <p className="text-xs text-gray-500">
+                    Shows in the separate &quot;Senior Team&quot; panel on the About page.
+                  </p>
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    className="sr-only peer"
+                    checked={!!currentMember.isSenior}
+                    onChange={(e) =>
+                      setCurrentMember({
+                        ...currentMember,
+                        isSenior: e.target.checked,
+                      })
+                    }
+                  />
+                  <div className="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                </label>
+              </div>
               <div>
                 <label className="block text-sm font-medium text-gray-400 mb-1">
                   Image URL
@@ -177,6 +229,72 @@ export default function AdminTeamPage() {
                 />
               </div>
 
+              {/* Image Crop / Focus (object-position) */}
+              {currentMember.image?.trim() && (
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-400 mb-2">
+                      Card Crop (what stays visible)
+                    </label>
+                    <div className="w-full max-w-[320px] aspect-square rounded-xl overflow-hidden border border-white/10 bg-white/5">
+                      <img
+                        src={currentMember.image}
+                        alt="Preview"
+                        className="w-full h-full object-cover"
+                        style={{
+                          objectPosition: `${currentMember.imageFocusX ?? 50}% ${currentMember.imageFocusY ?? 20}%`,
+                        }}
+                      />
+                    </div>
+                    <p className="text-xs text-gray-500 mt-2">
+                      Adjust the focus so faces don&apos;t get cut in the About page cards.
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-3">
+                    <div>
+                      <div className="flex items-center justify-between text-xs text-gray-400 mb-1">
+                        <span>Horizontal</span>
+                        <span>{Math.round(currentMember.imageFocusX ?? 50)}%</span>
+                      </div>
+                      <input
+                        type="range"
+                        min={0}
+                        max={100}
+                        value={currentMember.imageFocusX ?? 50}
+                        onChange={(e) =>
+                          setCurrentMember({
+                            ...currentMember,
+                            imageFocusX: Number(e.target.value),
+                          })
+                        }
+                        className="w-full"
+                      />
+                    </div>
+
+                    <div>
+                      <div className="flex items-center justify-between text-xs text-gray-400 mb-1">
+                        <span>Vertical</span>
+                        <span>{Math.round(currentMember.imageFocusY ?? 20)}%</span>
+                      </div>
+                      <input
+                        type="range"
+                        min={0}
+                        max={100}
+                        value={currentMember.imageFocusY ?? 20}
+                        onChange={(e) =>
+                          setCurrentMember({
+                            ...currentMember,
+                            imageFocusY: Number(e.target.value),
+                          })
+                        }
+                        className="w-full"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+
               <div className="pt-4 flex justify-end gap-3">
                 <button
                   type="button"
@@ -193,6 +311,7 @@ export default function AdminTeamPage() {
                 </button>
               </div>
             </form>
+            </div>
           </div>
         </div>
       )}

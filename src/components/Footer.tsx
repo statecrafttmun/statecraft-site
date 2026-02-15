@@ -15,10 +15,10 @@ export default function Footer() {
           <div className="md:col-span-5 space-y-6">
             <Link href="/" className="inline-block">
               <span className="block text-2xl font-serif font-bold text-white tracking-wide">
-                Statecraft MUN
+                Statecraft
               </span>
               <span className="block text-xs text-[var(--color-gold)] tracking-[0.3em] uppercase mt-1">
-                Society
+                Hansraj College
               </span>
             </Link>
             <p className="text-gray-400 text-sm leading-relaxed max-w-sm font-light">
@@ -45,19 +45,26 @@ export default function Footer() {
           <div className="md:col-span-3">
             <h4 className="text-white font-serif mb-6 text-lg">Navigation</h4>
             <ul className="space-y-3">
-              {["Home", "Events", "Publications", "About", "Contact"].map(
-                (item) => (
+              {["Home", "Events", "Blog", "About", "Contact"].map((item) => {
+                const href =
+                  item === "Home"
+                    ? "/"
+                    : item === "Blog"
+                    ? "/publications"
+                    : `/${item.toLowerCase()}`;
+
+                return (
                   <li key={item}>
                     <Link
-                      href={item === "Home" ? "/" : `/${item.toLowerCase()}`}
+                      href={href}
                       className="text-sm text-gray-500 hover:text-[var(--color-gold)] transition-colors flex items-center gap-2 group"
                     >
                       <span className="w-1 h-1 rounded-full bg-[var(--color-gold)] opacity-0 group-hover:opacity-100 transition-opacity" />
                       {item}
                     </Link>
                   </li>
-                )
-              )}
+                );
+              })}
             </ul>
           </div>
 

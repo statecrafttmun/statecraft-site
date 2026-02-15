@@ -8,7 +8,7 @@ export default function AdminDashboard() {
                     <p className="text-4xl font-bold text-primary">3</p>
                 </div>
                 <div className="p-6 rounded-2xl bg-white/5 border border-white/10">
-                    <h3 className="text-gray-400 mb-2">Publications</h3>
+                    <h3 className="text-gray-400 mb-2">Blog Posts</h3>
                     <p className="text-4xl font-bold text-primary">4</p>
                 </div>
                 <div className="p-6 rounded-2xl bg-white/5 border border-white/10">

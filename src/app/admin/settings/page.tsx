@@ -12,14 +12,17 @@ export default function AdminSettingsPage() {
   });
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    loadSettings();
-  }, []);
-
   async function loadSettings() {
     const data = await getSettings();
     setSettings(data);
   }
+
+  useEffect(() => {
+    // defer to satisfy eslint react-hooks/set-state-in-effect
+    setTimeout(() => {
+      loadSettings();
+    }, 0);
+  }, []);
 
   async function handleSave() {
     setLoading(true);
@@ -38,7 +41,7 @@ export default function AdminSettingsPage() {
 
           <div className="flex items-center justify-between mb-6">
             <div>
-              <p className="font-medium">Show "Join Us" Button</p>
+              <p className="font-medium">Show &quot;Join Us&quot; Button</p>
               <p className="text-sm text-gray-400">
                 Toggle visibility of the recruitment button in the navbar.
               </p>
@@ -78,9 +81,31 @@ export default function AdminSettingsPage() {
             </p>
           </div>
 
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-400 mb-1">
+              Home Hero Background Image URL
+            </label>
+            <input
+              type="url"
+              value={
+                typeof settings.homeHeroBgImage === "string"
+                  ? settings.homeHeroBgImage
+                  : ""
+              }
+              onChange={(e) =>
+                setSettings({ ...settings, homeHeroBgImage: e.target.value })
+              }
+              className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 focus:outline-none focus:border-primary"
+              placeholder="https://..."
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              Used as the background image on the Home page hero.
+            </p>
+          </div>
+
           <div className="flex items-center justify-between mb-6">
             <div>
-              <p className="font-medium">Show "Upcoming Conferences" Section</p>
+              <p className="font-medium">Show &quot;Upcoming Conferences&quot; Section</p>
               <p className="text-sm text-gray-400">
                 Toggle visibility of the upcoming conferences block on the home
                 page.

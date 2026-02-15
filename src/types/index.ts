@@ -43,10 +43,13 @@ export interface TeamMember {
   name: string;
   role: string;
   image: string;
+  imageFocusX?: number | null;
+  imageFocusY?: number | null;
   createdAt: Date | string;
   updatedAt: Date | string;
   quote?: string | null;
   bio?: string;
+  isSenior?: boolean | null;
 }
 
 export interface Category {
@@ -78,6 +81,7 @@ export interface SettingsObject {
   showJoinUs?: boolean;
   showUpcomingConferences?: boolean;
   joinUsLink?: string;
+  homeHeroBgImage?: string;
   emergencyContact?: string;
   [key: string]: boolean | string | undefined;
 }
@@ -119,7 +123,10 @@ export interface TeamMemberInput {
   name: string;
   role: string;
   image: string;
+  imageFocusX?: number;
+  imageFocusY?: number;
   quote?: string | null;
+  isSenior?: boolean;
 }
 
 export interface TimelineInput {

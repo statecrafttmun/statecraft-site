@@ -55,7 +55,7 @@ export default async function EventDetailPage({
   }
 
   return (
-    <div className="min-h-screen pb-32 md:pb-20 bg-[#020308]">
+    <div className="min-h-screen pb-40 md:pb-20 bg-[#020308]">
       {/* HERO */}
       <section className="relative h-[60vh] flex flex-col justify-end p-6 border-b border-white/10 overflow-hidden">
         {/* Stylized Map Background */}
@@ -158,14 +158,31 @@ export default async function EventDetailPage({
         </div>
       </div>
 
-      {/* Floating Mobile Action Bar */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 p-4 bg-[#020308]/90 backdrop-blur-xl border-t border-white/10 z-30 flex gap-4">
-        <button className="flex-1 py-3 rounded-lg border border-white/20 text-white font-bold text-sm">
+      {/* Floating Mobile Action Bar (kept ABOVE the bottom nav to avoid collisions) */}
+      <div className="md:hidden fixed left-0 right-0 bottom-[calc(env(safe-area-inset-bottom)+76px)] p-4 bg-[#020308]/90 backdrop-blur-xl border-t border-white/10 z-30 flex gap-4">
+        <a
+          href="mailto:contact@statecrafthansraj.info"
+          className="flex-1 py-3 rounded-lg border border-white/20 text-white font-bold text-sm text-center"
+        >
           Contact
-        </button>
-        <button className="flex-1 py-3 rounded-lg bg-[var(--color-gold)] text-black font-bold text-sm shadow-[0_0_15px_rgba(0,91,187,0.3)]">
-          Register
-        </button>
+        </a>
+        {event.status === "Open" ? (
+          <a
+            href={event.registrationLink || "#"}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex-1 py-3 rounded-lg bg-[var(--color-gold)] text-black font-bold text-sm text-center shadow-[0_0_15px_rgba(0,91,187,0.3)]"
+          >
+            Register
+          </a>
+        ) : (
+          <button
+            disabled
+            className="flex-1 py-3 rounded-lg bg-gray-700 text-gray-400 font-bold text-sm cursor-not-allowed"
+          >
+            Closed
+          </button>
+        )}
       </div>
     </div>
   );

@@ -58,6 +58,14 @@ body {
   overflow-x: hidden;
 }
 
+/* Safe-area helpers (iOS notch / home indicator) */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.pt-safe {
+  padding-top: env(safe-area-inset-top);
+}
+
 h1,
 h2,
 h3,

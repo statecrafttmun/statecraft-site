@@ -6,11 +6,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = "https://statecrafthansraj.info";
 
   let events: Event[] = [];
-  let publications: Publication[] = [];
+  let blog: Publication[] = [];
 
   try {
     events = await getStaticEvents();
-    publications = await getStaticPublications();
+    blog = await getStaticPublications();
   } catch (error) {
     console.error("Failed to fetch data for sitemap:", error);
     // Continue with empty data to prevent build failure
@@ -23,7 +23,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.7,
   }));
 
-  const publicationUrls = publications.map((pub) => ({
+  const blogUrls = blog.map((pub) => ({
     url: `${baseUrl}/publications/${pub.id}`,
     lastModified: new Date(pub.date),
     priority: 0.8,
@@ -57,5 +57,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
   ];
 
-  return [...staticUrls, ...eventUrls, ...publicationUrls];
+  return [...staticUrls, ...eventUrls, ...blogUrls];
 }

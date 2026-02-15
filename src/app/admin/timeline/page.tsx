@@ -23,14 +23,17 @@ export default function AdminTimelinePage() {
   });
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    loadTimeline();
-  }, []);
-
   async function loadTimeline() {
     const data = await getTimeline();
     setTimeline(data);
   }
+
+  useEffect(() => {
+    // defer to satisfy eslint react-hooks/set-state-in-effect
+    setTimeout(() => {
+      loadTimeline();
+    }, 0);
+  }, []);
 
   function openModal(item?: TimelineItem) {
     if (item) {

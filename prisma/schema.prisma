@@ -46,13 +46,18 @@ model GalleryImage {
 }
 
 model TeamMember {
-  id        String   @id @default(uuid())
-  name      String
-  role      String
-  image     String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  quote     String?
+  id          String   @id @default(uuid())
+  name        String
+  role        String
+  image       String
+  /// Percentage (0..100) crop focus for object-position.
+  /// Lets admin control what part of the image stays visible in cards.
+  imageFocusX Int      @default(50)
+  imageFocusY Int      @default(20)
+  isSenior    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  quote       String?
 }
 
 model Category {
