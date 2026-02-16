@@ -20,13 +20,19 @@ interface PublicationDisplay {
   image?: string | null;
 }
 
-const categories = [
-  "All",
-  "Background Guide",
-  "Article",
-  "Newsletter",
-  "Research Paper",
+const categoryOptions: Array<{ label: string; value: string }> = [
+  { label: "All", value: "All" },
+  { label: "Delegate Support Material", value: "Background Guide" },
+  { label: "Article", value: "Article" },
+  { label: "Report", value: "Newsletter" },
+  { label: "Research Paper", value: "Research Paper" },
 ];
+
+const displayCategoryLabel = (type: string) => {
+  if (type === "Background Guide") return "Delegate Support Material";
+  if (type === "Newsletter") return "Report";
+  return type;
+};
 
 export default function PublicationsPage() {
   const [publications, setPublications] = useState<PublicationDisplay[]>([]);
@@ -93,18 +99,18 @@ export default function PublicationsPage() {
       {/* FILTERS */}
       <div className="container mx-auto max-w-6xl mb-12">
         <div className="flex flex-wrap justify-center gap-4">
-          {categories.map((c) => (
+          {categoryOptions.map(({ label, value }) => (
             <button
-              key={c}
-              onClick={() => setFilter(c)}
+              key={value}
+              onClick={() => setFilter(value)}
               className={clsx(
                 "px-6 py-2 rounded-full border text-sm font-medium transition-all duration-300",
-                filter === c
+                filter === value
                   ? "bg-[var(--color-gold)] text-black border-[var(--color-gold)]"
                   : "bg-transparent text-gray-400 border-white/10 hover:border-white/30 hover:text-white"
               )}
             >
-              {c}
+              {label}
             </button>
           ))}
         </div>
@@ -156,7 +162,7 @@ export default function PublicationsPage() {
 
                   <div className="pt-6 border-t border-white/5 flex items-center justify-between mt-auto">
                     <span className="text-xs text-gray-500 font-bold uppercase tracking-wider">
-                      {pub.type}
+                      {displayCategoryLabel(pub.type)}
                     </span>
                     <Link
                       href={`/publications/${pub.id}`}

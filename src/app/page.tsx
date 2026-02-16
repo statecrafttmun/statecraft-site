@@ -81,23 +81,7 @@ const ParticleBackground = ({ bgUrl }: { bgUrl?: string }) => {
           backgroundSize: "cover",
         }}
       />
-      <div className="absolute inset-0 bg-gradient-to-b from-[#020308]/80 via-[#020308]/90 to-[#020308]" />
-      <div
-        className="absolute inset-0 opacity-20"
-        style={{ backgroundImage: 'url("/noise.png")' }}
-      />
-      {/* Assuming noise.png exists or falls back to CSS noise if not, using simulated noise via SVG or just dots */}
-      <svg className="absolute inset-0 w-full h-full opacity-30">
-        <filter id="noiseFilter">
-          <feTurbulence
-            type="fractalNoise"
-            baseFrequency="0.65"
-            numOctaves="3"
-            stitchTiles="stitch"
-          />
-        </filter>
-        <rect width="100%" height="100%" filter="url(#noiseFilter)" />
-      </svg>
+      {/* Removed grey/noise overlays to keep the hero background image clearly visible */}
       {/* Small floating particles */}
       {circles.map((c, i) => (
         <motion.div
@@ -287,9 +271,8 @@ export default function Home() {
       {/* JOIN US SECTION - DYNAMIC */}
       {/* JOIN US SECTION - DYNAMIC */}
       {settings.showJoinUs && (
-        <section className="py-24 relative overflow-hidden border-y border-[var(--color-gold)]/30">
-          {/* Background with slight gold tint */}
-          <div className="absolute inset-0 bg-gradient-to-r from-[#020308] via-[#0f0e08] to-[#020308]" />
+        <section className="py-24 relative overflow-hidden border-y border-[var(--color-gold)]/30 bg-[#020308]">
+          {/* Solid background (removed gradient) */}
           <div
             className="absolute inset-0 opacity-10"
             style={{ backgroundImage: 'url("/noise.png")' }}
@@ -333,11 +316,12 @@ export default function Home() {
 
       {/* NEXT EVENT HIGHLIGHT */}
       {settings.showUpcomingConferences !== false && (
-        <section className="py-20 bg-gradient-to-b from-[#020308] to-[#0A0B10] border-y border-white/5">
+        <section className="py-20 bg-[#020308] border-y border-white/5">
           <div className="container mx-auto px-6">
             <div className="relative rounded-2xl overflow-hidden border border-white/10 bg-[#050509]">
               <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?q=80&w=2069&auto=format&fit=crop')] bg-cover bg-center opacity-20 mix-blend-overlay" />
-              <div className="absolute inset-0 bg-gradient-to-r from-black via-black/80 to-transparent" />
+              {/* Removed gradient overlay for a flatter look */}
+              <div className="absolute inset-0 bg-black/60" />
 
               <div className="relative z-10 p-8 md:p-16 flex flex-col md:flex-row justify-between items-start md:items-end gap-10">
                 <div className="max-w-xl space-y-6">
@@ -491,7 +475,7 @@ export default function Home() {
       </section>
 
       {/* PAST HIGHLIGHTS CAROUSEL */}
-      <section className="py-24 bg-[#0A0B10] border-t border-white/5 overflow-hidden">
+      <section className="py-24 bg-[#020308] border-t border-white/5 overflow-hidden">
         <div className="container mx-auto px-6 mb-12 flex justify-between items-end">
           <div>
             <h2 className="text-3xl font-serif font-bold mb-2">

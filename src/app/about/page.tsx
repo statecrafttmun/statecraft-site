@@ -282,8 +282,24 @@ export default function AboutPage() {
             </h2>
           </div>
 
+          <div className="mb-16">
+            <div className="text-center mb-10">
+              <span className="text-gray-400 tracking-[0.2em] text-[10px] font-bold uppercase">
+                Core Team
+              </span>
+              <h3 className="text-3xl font-serif font-bold mt-2">
+                Core Secretariat
+              </h3>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+              {coreTeam.map((member, i) => (
+                <TeamCard key={`core-${i}`} member={member} />
+              ))}
+            </div>
+          </div>
+
           {seniorTeam.length > 0 && (
-            <div className="mb-16">
+            <div>
               <div className="text-center mb-10">
                 <span className="text-gray-400 tracking-[0.2em] text-[10px] font-bold uppercase">
                   Senior Team
@@ -299,22 +315,6 @@ export default function AboutPage() {
               </div>
             </div>
           )}
-
-          <div>
-            <div className="text-center mb-10">
-              <span className="text-gray-400 tracking-[0.2em] text-[10px] font-bold uppercase">
-                Core Team
-              </span>
-              <h3 className="text-3xl font-serif font-bold mt-2">
-                Core Secretariat
-              </h3>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-              {coreTeam.map((member, i) => (
-                <TeamCard key={`core-${i}`} member={member} />
-              ))}
-            </div>
-          </div>
         </div>
       </section>
     </div>
