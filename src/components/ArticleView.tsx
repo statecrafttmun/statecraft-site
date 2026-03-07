@@ -4,6 +4,7 @@ import { motion, useScroll, useSpring } from "framer-motion";
 import { ArrowLeft, Calendar, User, Share2 } from "lucide-react";
 import Link from "next/link";
 import { useRef } from "react";
+import { renderMarkdown } from "@/utils/markdown";
 
 // Flexible type for article display that works with both DB data and mock data
 interface ArticleData {
@@ -88,9 +89,7 @@ export default function ArticleView({ pub }: { pub: ArticleData }) {
           <div className="prose prose-invert prose-lg max-w-none text-gray-300">
             {/* Display actual content if available, otherwise show placeholder */}
             {pub.content ? (
-              pub.content
-                .split("\n\n")
-                .map((paragraph, index) => <p key={index}>{paragraph}</p>)
+              <div dangerouslySetInnerHTML={{ __html: renderMarkdown(pub.content) }} />
             ) : (
               <>
                 <p>

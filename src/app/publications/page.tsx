@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, ArrowRight, BookOpen, FileText } from "lucide-react";
-import { getPublications } from "@/actions";
+import { getPublications, getPublicationCategories } from "@/actions";
 import Link from "next/link";
 import clsx from "clsx";
 import type { Publication } from "@/types";
@@ -20,22 +20,9 @@ interface PublicationDisplay {
   image?: string | null;
 }
 
-const categoryOptions: Array<{ label: string; value: string }> = [
-  { label: "All", value: "All" },
-  { label: "Delegate Support Material", value: "Background Guide" },
-  { label: "Article", value: "Article" },
-  { label: "Report", value: "Newsletter" },
-  { label: "Research Paper", value: "Research Paper" },
-];
-
-const displayCategoryLabel = (type: string) => {
-  if (type === "Background Guide") return "Delegate Support Material";
-  if (type === "Newsletter") return "Report";
-  return type;
-};
-
 export default function PublicationsPage() {
   const [publications, setPublications] = useState<PublicationDisplay[]>([]);
+  const [categories, setCategories] = useState<string[]>([]);
   const [filter, setFilter] = useState("All");
 
   useEffect(() => {
@@ -74,6 +61,11 @@ export default function PublicationsPage() {
         ]);
       }
     });
+    getPublicationCategories().then((data) => {
+      if (data && data.length > 0) {
+        setCategories(data);
+      }
+    });
   }, []);
 
   const filteredPubs = publications.filter(
@@ -99,18 +91,18 @@ export default function PublicationsPage() {
       {/* FILTERS */}
       <div className="container mx-auto max-w-6xl mb-12">
         <div className="flex flex-wrap justify-center gap-4">
-          {categoryOptions.map(({ label, value }) => (
+          {["All", ...categories].map((cat) => (
             <button
-              key={value}
-              onClick={() => setFilter(value)}
+              key={cat}
+              onClick={() => setFilter(cat)}
               className={clsx(
                 "px-6 py-2 rounded-full border text-sm font-medium transition-all duration-300",
-                filter === value
+                filter === cat
                   ? "bg-[var(--color-gold)] text-black border-[var(--color-gold)]"
                   : "bg-transparent text-gray-400 border-white/10 hover:border-white/30 hover:text-white"
               )}
             >
-              {label}
+              {cat}
             </button>
           ))}
         </div>
@@ -162,7 +154,7 @@ export default function PublicationsPage() {
 
                   <div className="pt-6 border-t border-white/5 flex items-center justify-between mt-auto">
                     <span className="text-xs text-gray-500 font-bold uppercase tracking-wider">
-                      {displayCategoryLabel(pub.type)}
+                      {pub.type}
                     </span>
                     <Link
                       href={`/publications/${pub.id}`}

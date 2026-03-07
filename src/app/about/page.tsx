@@ -3,7 +3,8 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { User, Award, Scale, Globe } from "lucide-react";
-import { getTeam, getTimeline } from "@/actions";
+import { getTeam, getTimeline, getSettings } from "@/actions";
+import type { SettingsObject } from "@/types";
 
 // Local type for team/timeline that can be either from database or mock data
 interface TeamMemberDisplay {
@@ -101,19 +102,23 @@ const TeamCard = ({ member }: { member: TeamMemberDisplay }) => {
 export default function AboutPage() {
   const [team, setTeam] = useState<TeamMemberDisplay[]>([]);
   const [timeline, setTimeline] = useState<TimelineDisplay[]>([]);
+  const [settings, setSettings] = useState<SettingsObject>({ showTimeline: true });
   const [isLoading, setIsLoading] = useState(true);
 
   const seniorTeam = team.filter((m) => !!m.isSenior);
   const coreTeam = team.filter((m) => !m.isSenior);
 
   useEffect(() => {
-    // Fetch team and timeline data from database
+    // Fetch team, timeline, and settings data from database
     Promise.all([
       getTeam().then((data) => {
         if (data) setTeam(data);
       }),
       getTimeline().then((data) => {
         if (data) setTimeline(data);
+      }),
+      getSettings().then((data) => {
+        if (data) setSettings(data);
       }),
     ]).finally(() => setIsLoading(false));
   }, []);
@@ -161,6 +166,7 @@ export default function AboutPage() {
       </section>
 
       {/* OUR STORY TIMELINE */}
+      {settings.showTimeline !== false && (
       <section className="py-24 relative overflow-hidden">
         <div className="container mx-auto px-6 max-w-4xl">
           <div className="text-center mb-16">
@@ -211,7 +217,7 @@ export default function AboutPage() {
                         <h3 className="text-xl font-bold text-white mb-2">
                           {item.title}
                         </h3>
-                        <p className="text-gray-400 text-sm leading-relaxed">
+                        <p className="text-gray-400 text-sm leading-relaxed whitespace-pre-line">
                           {item.desc}
                         </p>
                       </div>
@@ -224,6 +230,7 @@ export default function AboutPage() {
           </div>
         </div>
       </section>
+      )}
 
       {/* OUR VALUES PILLARS */}
       <section className="py-24 bg-[#0A0B10] border-y border-white/5">

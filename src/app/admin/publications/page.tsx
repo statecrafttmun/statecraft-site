@@ -11,6 +11,7 @@ import {
 } from "@/actions";
 import { Plus, Edit, Trash2, X, Save, Settings } from "lucide-react";
 import type { Publication, PublicationInput } from "@/types";
+import MarkdownEditor from "@/components/MarkdownEditor";
 
 const emptyPub: PublicationInput = {
   title: "",
@@ -165,7 +166,7 @@ export default function AdminPublicationsPage() {
       {/* Edit Modal */}
       {isEditing && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="w-full max-w-lg bg-[#0a0a0a] border border-white/10 rounded-2xl p-8 max-h-[90vh] overflow-y-auto">
+          <div className="w-full max-w-3xl bg-[#0a0a0a] border border-white/10 rounded-2xl p-8 max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-bold">
                 {currentPub.id ? "Edit Publication" : "Add Publication"}
@@ -276,19 +277,14 @@ export default function AdminPublicationsPage() {
                 <label className="block text-sm font-medium text-gray-400 mb-1">
                   Content
                 </label>
-                <textarea
-                  rows={10}
+                <MarkdownEditor
                   value={currentPub.content || ""}
-                  onChange={(e) =>
-                    setCurrentPub({ ...currentPub, content: e.target.value })
+                  onChange={(val) =>
+                    setCurrentPub({ ...currentPub, content: val })
                   }
-                  className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 focus:outline-none focus:border-primary resize-y"
-                  placeholder="Full article content... (supports plain text, paragraphs will be preserved)"
+                  rows={10}
+                  placeholder="Full article content... (supports Markdown)"
                 />
-                <p className="text-xs text-gray-500 mt-1">
-                  The full text content of the article or report. Leave empty to
-                  use default placeholder content.
-                </p>
               </div>
 
               <div>

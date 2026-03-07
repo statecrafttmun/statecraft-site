@@ -45,6 +45,7 @@ export interface TeamMember {
   image: string;
   imageFocusX?: number | null;
   imageFocusY?: number | null;
+  order?: number;
   createdAt: Date | string;
   updatedAt: Date | string;
   quote?: string | null;
@@ -80,6 +81,7 @@ export interface Timeline {
 export interface SettingsObject {
   showJoinUs?: boolean;
   showUpcomingConferences?: boolean;
+  showTimeline?: boolean;
   joinUsLink?: string;
   homeHeroBgImage?: string;
   emergencyContact?: string;
@@ -127,6 +129,7 @@ export interface TeamMemberInput {
   imageFocusY?: number;
   quote?: string | null;
   isSenior?: boolean;
+  order?: number;
 }
 
 export interface TimelineInput {

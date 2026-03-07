@@ -11,6 +11,7 @@ import {
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
+import FloatingMobileBar from "@/components/FloatingMobileBar";
 
 export async function generateMetadata({
   params,
@@ -99,7 +100,7 @@ export default async function EventDetailPage({
             <h2 className="text-2xl font-serif font-bold text-white mb-6 flex items-center gap-3">
               Overview <div className="h-[1px] flex-grow bg-white/10" />
             </h2>
-            <p className="text-gray-400 leading-relaxed text-lg">
+            <p className="text-gray-400 leading-relaxed text-lg whitespace-pre-line">
               {event.desc ||
                 "Experience diplomacy at its finest. Join delegates from across the nation to debate, deliberate, and decide on global issues."}
             </p>
@@ -158,32 +159,8 @@ export default async function EventDetailPage({
         </div>
       </div>
 
-      {/* Floating Mobile Action Bar (kept ABOVE the bottom nav to avoid collisions) */}
-      <div className="md:hidden fixed left-0 right-0 bottom-[calc(env(safe-area-inset-bottom)+76px)] p-4 bg-[#020308]/90 backdrop-blur-xl border-t border-white/10 z-30 flex gap-4">
-        <a
-          href="mailto:contact@statecrafthansraj.info"
-          className="flex-1 py-3 rounded-lg border border-white/20 text-white font-bold text-sm text-center"
-        >
-          Contact
-        </a>
-        {event.status === "Open" ? (
-          <a
-            href={event.registrationLink || "#"}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex-1 py-3 rounded-lg bg-[var(--color-gold)] text-black font-bold text-sm text-center shadow-[0_0_15px_rgba(0,91,187,0.3)]"
-          >
-            Register
-          </a>
-        ) : (
-          <button
-            disabled
-            className="flex-1 py-3 rounded-lg bg-gray-700 text-gray-400 font-bold text-sm cursor-not-allowed"
-          >
-            Closed
-          </button>
-        )}
-      </div>
+      {/* Floating Mobile Action Bar - rendered via portal to escape transform context */}
+      <FloatingMobileBar status={event.status} registrationLink={event.registrationLink} />
     </div>
   );
 }

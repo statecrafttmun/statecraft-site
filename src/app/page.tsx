@@ -239,9 +239,9 @@ export default function Home() {
               Diplomacia · Estadista · Honor
             </h2>
             <h1 className="text-4xl md:text-6xl lg:text-7xl font-serif font-bold text-white leading-tight">
-              Hansraj College
+              Statecraft
               <br />
-              <span className="text-[#A3A3A3]">Model United Nations</span>
+              <span className="text-[#A3A3A3]">Hansraj College</span>
             </h1>
           </motion.div>
 
@@ -294,13 +294,9 @@ export default function Home() {
               <span className="inline-block px-3 py-1 mb-4 border border-[var(--color-gold)]/50 rounded-full text-[var(--color-gold)] text-xs tracking-[0.2em] uppercase font-bold bg-[var(--color-gold)]/5">
                 Recruitment Open
               </span>
-              <h2 className="text-4xl md:text-6xl font-serif font-bold mb-6 text-white">
+              <h2 className="text-4xl md:text-6xl font-serif font-bold mb-10 text-white">
                 Join The Legacy
               </h2>
-              <p className="text-xl md:text-2xl font-medium mb-10 max-w-2xl mx-auto text-gray-300">
-                The Secretariat awaits. Be part of something greater than
-                yourself.
-              </p>
               <a
                 href={settings.joinUsLink || "#"}
                 target="_blank"

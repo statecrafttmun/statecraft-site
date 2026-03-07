@@ -76,6 +76,7 @@ export async function getStaticTeam() {
     const { data, error } = await supabase
       .from("TeamMember")
       .select("*")
+      .order("order", { ascending: true })
       .order("createdAt", { ascending: true });
 
     if (error) throw error;
@@ -346,6 +347,7 @@ export async function getTeam() {
     const { data, error } = await supabase
       .from("TeamMember")
       .select("*")
+      .order("order", { ascending: true })
       .order("createdAt", { ascending: true });
 
     if (error) throw error;
@@ -367,6 +369,7 @@ export async function saveTeamMember(member: TeamMemberInput) {
       // image focus defaults (used by cards via object-position)
       imageFocusX: typeof member.imageFocusX === "number" ? member.imageFocusX : 50,
       imageFocusY: typeof member.imageFocusY === "number" ? member.imageFocusY : 20,
+      order: typeof member.order === "number" ? member.order : 0,
       updatedAt: new Date().toISOString(),
     };
 
@@ -488,6 +491,25 @@ export async function deleteTeamMember(id: string) {
     return { success: true };
   } catch (error) {
     console.error("Error deleting team member:", error);
+    return { success: false, error };
+  }
+}
+
+export async function updateTeamOrder(orderedIds: string[]) {
+  try {
+    const supabase = await getSupabase();
+    for (let i = 0; i < orderedIds.length; i++) {
+      const { error } = await supabase
+        .from("TeamMember")
+        .update({ order: i, updatedAt: new Date().toISOString() })
+        .eq("id", orderedIds[i]);
+      if (error) throw error;
+    }
+    revalidatePath("/about");
+    revalidatePath("/admin/team");
+    return { success: true };
+  } catch (error) {
+    console.error("Error updating team order:", error);
     return { success: false, error };
   }
 }

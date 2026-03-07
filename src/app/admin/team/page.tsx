@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { getTeam, saveTeamMember, deleteTeamMember } from "@/actions";
-import { Plus, Edit, Trash2, X, Save, User } from "lucide-react";
+import { getTeam, saveTeamMember, deleteTeamMember, updateTeamOrder } from "@/actions";
+import { Plus, Edit, Trash2, X, Save, User, ChevronUp, ChevronDown } from "lucide-react";
 import type { TeamMember, TeamMemberInput } from "@/types";
 
 const emptyMember: TeamMemberInput = {
@@ -60,6 +60,22 @@ export default function AdminTeamPage() {
     }
   }
 
+  async function handleMoveUp(index: number) {
+    if (index === 0) return;
+    const newTeam = [...team];
+    [newTeam[index - 1], newTeam[index]] = [newTeam[index], newTeam[index - 1]];
+    setTeam(newTeam);
+    await updateTeamOrder(newTeam.map((m) => m.id));
+  }
+
+  async function handleMoveDown(index: number) {
+    if (index === team.length - 1) return;
+    const newTeam = [...team];
+    [newTeam[index], newTeam[index + 1]] = [newTeam[index + 1], newTeam[index]];
+    setTeam(newTeam);
+    await updateTeamOrder(newTeam.map((m) => m.id));
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     await saveTeamMember(currentMember);
@@ -80,13 +96,33 @@ export default function AdminTeamPage() {
       </div>
 
       {/* List */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {team.map((member) => (
+      <div className="space-y-3">
+        {team.map((member, index) => (
           <div
             key={member.id}
-            className="p-6 rounded-xl bg-white/5 border border-white/10 flex items-center gap-4"
+            className="p-4 rounded-xl bg-white/5 border border-white/10 flex items-center gap-4"
           >
-            <div className="w-16 h-16 rounded-full bg-gray-800 overflow-hidden shrink-0 flex items-center justify-center">
+            {/* Reorder Buttons */}
+            <div className="flex flex-col gap-1">
+              <button
+                onClick={() => handleMoveUp(index)}
+                disabled={index === 0}
+                className="p-1 rounded bg-white/5 hover:bg-white/10 text-gray-400 disabled:opacity-20 disabled:cursor-not-allowed transition-colors"
+                title="Move up"
+              >
+                <ChevronUp size={16} />
+              </button>
+              <button
+                onClick={() => handleMoveDown(index)}
+                disabled={index === team.length - 1}
+                className="p-1 rounded bg-white/5 hover:bg-white/10 text-gray-400 disabled:opacity-20 disabled:cursor-not-allowed transition-colors"
+                title="Move down"
+              >
+                <ChevronDown size={16} />
+              </button>
+            </div>
+
+            <div className="w-12 h-12 rounded-full bg-gray-800 overflow-hidden shrink-0 flex items-center justify-center">
               {member.image ? (
                 <img
                   src={member.image}
@@ -94,11 +130,11 @@ export default function AdminTeamPage() {
                   className="w-full h-full object-cover"
                 />
               ) : (
-                <User size={24} className="text-gray-500" />
+                <User size={20} className="text-gray-500" />
               )}
             </div>
-            <div className="flex-grow">
-              <h3 className="text-lg font-bold flex items-center gap-2">
+            <div className="flex-grow min-w-0">
+              <h3 className="text-base font-bold flex items-center gap-2 truncate">
                 {member.name}
                 {member.isSenior && (
                   <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-[var(--color-gold)]/15 text-[var(--color-gold)] border border-[var(--color-gold)]/25">
@@ -106,9 +142,9 @@ export default function AdminTeamPage() {
                   </span>
                 )}
               </h3>
-              <p className="text-sm text-primary">{member.role}</p>
+              <p className="text-sm text-primary truncate">{member.role}</p>
             </div>
-            <div className="flex flex-col gap-2">
+            <div className="flex gap-2 shrink-0">
               <button
                 onClick={() => handleEdit(member)}
                 className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 transition-colors"

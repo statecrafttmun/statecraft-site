@@ -19,7 +19,7 @@ interface EventDisplay
 
 export default function EventsPage() {
   const [events, setEvents] = useState<EventDisplay[]>([]);
-  const [filter, setFilter] = useState("All");
+  const [filter, setFilter] = useState("Upcoming");
 
   useEffect(() => {
     getEvents().then((data) => {
@@ -85,7 +85,7 @@ export default function EventsPage() {
 
           {/* Filters */}
           <div className="flex gap-2 p-1 bg-white/5 rounded-full backdrop-blur-sm border border-white/10">
-            {["All", "Upcoming"].map((f) => (
+            {["Upcoming", "All"].map((f) => (
               <button
                 key={f}
                 onClick={() => setFilter(f)}

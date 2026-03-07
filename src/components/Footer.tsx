@@ -101,8 +101,7 @@ export default function Footer() {
         {/* Copyright */}
         <div className="border-t border-white/5 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-gray-600">
           <p>
-            © {new Date().getFullYear()} Hansraj College MUN Society. All rights
-            reserved.
+            Statecraft, Hansraj College. All rights reserved.
           </p>
           <div className="flex gap-6">
             <a href="#" className="hover:text-gray-400 transition-colors">

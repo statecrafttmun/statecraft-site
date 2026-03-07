@@ -55,6 +55,7 @@ model TeamMember {
   imageFocusX Int      @default(50)
   imageFocusY Int      @default(20)
   isSenior    Boolean  @default(false)
+  order       Int      @default(0)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   quote       String?
