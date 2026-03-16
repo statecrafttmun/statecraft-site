@@ -3,7 +3,7 @@ import MarkdownIt from "markdown-it";
 const md = new MarkdownIt({
   html: false, // Disable raw HTML for security
   linkify: true, // Auto-link URLs
-  breaks: true, // Convert \n to <br>
+  breaks: false, // Convert \n to <br>
   typographer: true, // Smart quotes, dashes, etc.
 });
 
